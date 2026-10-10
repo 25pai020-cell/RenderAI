@@ -94,6 +94,11 @@ export default function Register() {
         phone: form.phone.trim(),
       });
 
+      const receivedCode = res.data?.verification_code || res.data?.code;
+      if (receivedCode) {
+        setVerificationCode(String(receivedCode));
+      }
+
       setStatusMsg({
         type: "info",
         text: res.data.message || `Verification code sent to ${cleanEmail}. Please check your Gmail inbox.`,

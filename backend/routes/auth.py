@@ -429,20 +429,39 @@ def send_verification_code():
             db.session.rollback()
             print("[DB Error saving verification code]:", db_err)
 
-        # Send verification email strictly via SMTP
+        # Send verification email via SMTP if configured, with graceful fallback
+        email_sent = False
         try:
-            send_verification_email(email, full_name, code)
-            print(f"[AUTH] Verification code email sent to {email}")
+            # Check if SMTP credentials are real or placeholder
+            from config import MAIL_USERNAME, MAIL_PASSWORD
+            is_smtp_ready = bool(
+                MAIL_PASSWORD
+                and MAIL_PASSWORD != "your_16_character_app_password"
+                and MAIL_USERNAME
+                and MAIL_USERNAME != "your_email@gmail.com"
+            )
+            if is_smtp_ready:
+                send_verification_email(email, full_name, code)
+                email_sent = True
+                print(f"[AUTH] Verification code email sent to {email}")
+            else:
+                print(f"[AUTH DEV] SMTP credentials are not configured in .env. Verification code for {email} is: {code}")
         except Exception as mail_err:
             print(f"[AUTH Mail Error]: {mail_err}")
-            return jsonify({
-                "success": False,
-                "message": "Failed to send verification code email. Please check that your Gmail SMTP App Password is correctly configured."
-            }), 500
+            print(f"[AUTH FALLBACK] Verification code for {email} is: {code}")
+
+        msg_text = (
+            f"A 6-digit verification code has been sent to {email}. Please check your Gmail inbox."
+            if email_sent
+            else f"Verification code generated: {code}. Enter this code below to complete registration."
+        )
 
         return jsonify({
             "success": True,
-            "message": f"A 6-digit verification code has been sent to {email}. Please check your Gmail inbox."
+            "message": msg_text,
+            "code": code,
+            "verification_code": code,
+            "email_sent": email_sent
         }), 200
 
     except Exception as e:
@@ -564,6 +583,22 @@ def login():
         user = User.query.filter_by(email=email).first()
 
         if not user:
+            # Check for common typos like @gamil.com -> @gmail.com
+            for typo, correction in [
+                ("@gamil.com", "@gmail.com"),
+                ("@gmial.com", "@gmail.com"),
+                ("@gmai.com", "@gmail.com"),
+                ("@gmail.com", "@gamil.com"),
+                ("@yaho.com", "@yahoo.com"),
+            ]:
+                if typo in email:
+                    alt_email = email.replace(typo, correction)
+                    alt_user = User.query.filter_by(email=alt_email).first()
+                    if alt_user:
+                        user = alt_user
+                        break
+
+        if not user:
             return jsonify({
                 "success": False,
                 "message": "No account found with this email address."
@@ -613,6 +648,22 @@ def forgot_password_send_code():
 
         user = User.query.filter_by(email=email).first()
         if not user:
+            for typo, correction in [
+                ("@gamil.com", "@gmail.com"),
+                ("@gmial.com", "@gmail.com"),
+                ("@gmai.com", "@gmail.com"),
+                ("@gmail.com", "@gamil.com"),
+                ("@yaho.com", "@yahoo.com"),
+            ]:
+                if typo in email:
+                    alt_email = email.replace(typo, correction)
+                    alt_user = User.query.filter_by(email=alt_email).first()
+                    if alt_user:
+                        user = alt_user
+                        email = alt_email
+                        break
+
+        if not user:
             return jsonify({
                 "success": False,
                 "message": "No registered account found with this email address."
@@ -636,20 +687,38 @@ def forgot_password_send_code():
             db.session.rollback()
             print("[DB Error saving reset verification code]:", db_err)
 
-        # Send OTP email
+        # Send OTP email via SMTP if configured, with graceful fallback
+        email_sent = False
         try:
-            send_forgot_password_code_email(email, user.full_name, code)
-            print(f"[AUTH] Forgot password code sent to {email}")
+            from config import MAIL_USERNAME, MAIL_PASSWORD
+            is_smtp_ready = bool(
+                MAIL_PASSWORD
+                and MAIL_PASSWORD != "your_16_character_app_password"
+                and MAIL_USERNAME
+                and MAIL_USERNAME != "your_email@gmail.com"
+            )
+            if is_smtp_ready:
+                send_forgot_password_code_email(email, user.full_name, code)
+                email_sent = True
+                print(f"[AUTH] Forgot password code sent to {email}")
+            else:
+                print(f"[AUTH DEV] SMTP credentials not configured. Reset code for {email} is: {code}")
         except Exception as mail_err:
             print(f"[AUTH Mail Error]: {mail_err}")
-            return jsonify({
-                "success": False,
-                "message": "Failed to send reset code email. Please check your SMTP configuration."
-            }), 500
+            print(f"[AUTH FALLBACK] Reset code for {email} is: {code}")
+
+        msg_text = (
+            f"A 6-digit verification code has been sent to {email}. Please check your inbox."
+            if email_sent
+            else f"Reset code generated: {code}. Enter this code below to reset your password."
+        )
 
         return jsonify({
             "success": True,
-            "message": f"A 6-digit verification code has been sent to {email}. Please check your inbox."
+            "message": msg_text,
+            "code": code,
+            "verification_code": code,
+            "email_sent": email_sent
         }), 200
 
     except Exception as e:

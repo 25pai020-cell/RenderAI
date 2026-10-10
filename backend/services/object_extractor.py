@@ -28,6 +28,9 @@ CATEGORY_SYNONYMS = {
     "sofa": ["couch", "sofa", "chair"],
     "couch": ["couch", "sofa", "chair"],
     "table": ["dining table", "table", "desk"],
+    "study_table": ["dining table", "table", "desk", "chair"],
+    "study table": ["dining table", "table", "desk", "chair"],
+    "studytable": ["dining table", "table", "desk", "chair"],
     "side table": ["dining table", "table", "desk"],
     "bedside_table": ["dining table", "table", "desk"],
     "bedside table": ["dining table", "table", "desk"],
@@ -35,8 +38,14 @@ CATEGORY_SYNONYMS = {
     "desk": ["dining table", "desk", "table", "laptop"],
     "lamp": ["lamp", "vase", "clock", "potted plant", "traffic light"],
     "night lamp": ["lamp", "vase", "clock", "potted plant", "traffic light"],
-    "bedside lamp": ["lamp", "vase", "clock", "potted plant", "traffic light"],
     "wardrobe": ["refrigerator", "bed", "wardrobe"],
+    "vase_plant": ["vase", "potted plant", "clock"],
+    "vase": ["vase", "potted plant", "clock"],
+    "plant": ["potted plant", "vase"],
+    "wall_decor": ["clock", "vase", "potted plant"],
+    "wall decor": ["clock", "vase", "potted plant"],
+    "picture": ["clock", "vase", "potted plant"],
+    "painting": ["clock", "vase", "potted plant"],
     "tv": ["tv", "monitor", "laptop"],
 }
 
@@ -162,10 +171,117 @@ def extract_and_segment_object(image_source, category="bed", force_refresh=False
 
 
     # =========================================================================
-    # TABLE CATEGORY: TRUE ALPHA TRANSPARENCY SEGMENTATION
+    # STUDY TABLE: PRE-EXTRACTED CHECK
+    # =========================================================================
+    if "study_table" in str(image_source) or cat_clean in ["study_table", "studytable", "study table"]:
+        try:
+            basename = os.path.basename(image_source)
+            for root_dir_cand in [ROOT_DIR, BASE_DIR]:
+                st_cand_dir = os.path.join(root_dir_cand, "frontend", "public", "furniture_dataset", "study_table")
+                if os.path.exists(st_cand_dir):
+                    clean_b = basename.replace(".jpg", ".png").replace(".jpeg", ".png")
+                    cand_path = os.path.join(st_cand_dir, clean_b)
+                    if os.path.exists(cand_path):
+                        pre_img = cv2.imread(cand_path, cv2.IMREAD_UNCHANGED)
+                        if pre_img is not None and len(pre_img.shape) == 3 and pre_img.shape[2] == 4:
+                            os.makedirs(os.path.dirname(cache_path), exist_ok=True)
+                            cv2.imwrite(cache_path, pre_img)
+                            return web_path
+        except Exception as e:
+            print(f"Pre-extracted study table check error: {e}")
+
+    # =========================================================================
+    # VASE & PLANT: PRE-EXTRACTED CHECK
+    # =========================================================================
+    if "vase_plant" in str(image_source) or cat_clean in ["vase_plant", "vase", "plant"]:
+        try:
+            basename = os.path.basename(image_source)
+            for root_dir_cand in [ROOT_DIR, BASE_DIR]:
+                vp_cand_dir = os.path.join(root_dir_cand, "frontend", "public", "furniture_dataset", "vase_plant")
+                if os.path.exists(vp_cand_dir):
+                    clean_b = basename.replace(".jpg", ".png").replace(".jpeg", ".png")
+                    cand_path = os.path.join(vp_cand_dir, clean_b)
+                    if os.path.exists(cand_path):
+                        pre_img = cv2.imread(cand_path, cv2.IMREAD_UNCHANGED)
+                        if pre_img is not None and len(pre_img.shape) == 3 and pre_img.shape[2] == 4:
+                            os.makedirs(os.path.dirname(cache_path), exist_ok=True)
+                            cv2.imwrite(cache_path, pre_img)
+                            return web_path
+        except Exception as e:
+            print(f"Pre-extracted vase/plant check error: {e}")
+
+    # =========================================================================
+    # LAMP / NIGHT LAMP CATEGORY: PERFECT BACKGROUND REMOVAL & ZERO CUTOFF
+    # PRESERVES 100% LAMP BODY, SHADE, STAND, BASE & BULB WITHOUT CUTTING OFF PARTS
+    # =========================================================================
+    if "lamp" in str(image_source) or cat_clean in ["lamp", "night lamp", "nightlamp", "lighting"]:
+        try:
+            # 1. Check for pre-extracted matching file in frontend/public/furniture_dataset/lamp
+            basename = os.path.basename(image_source)
+            for root_dir_cand in [ROOT_DIR, BASE_DIR]:
+                for lamp_dir_name in ["lamp", "extracted_lamps"]:
+                    lamp_cand_dir = os.path.join(root_dir_cand, "frontend", "public", "furniture_dataset", lamp_dir_name)
+                    if os.path.exists(lamp_cand_dir):
+                        clean_b = basename.replace(".jpg", ".png").replace(".jpeg", ".png")
+                        for root, _, files in os.walk(lamp_cand_dir):
+                            if clean_b in files:
+                                cand_path = os.path.join(root, clean_b)
+                                pre_img = cv2.imread(cand_path, cv2.IMREAD_UNCHANGED)
+                                if pre_img is not None and len(pre_img.shape) == 3 and pre_img.shape[2] == 4:
+                                    os.makedirs(os.path.dirname(cache_path), exist_ok=True)
+                                    cv2.imwrite(cache_path, pre_img)
+                                    return web_path
+
+            import rembg
+            from PIL import Image
+            session = _get_table_seg_session()
+            h, w = img.shape[:2]
+            pil_img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+
+            # 2. High-precision segmentation mask
+            raw_mask = rembg.remove(pil_img, session=session, only_mask=True)
+            mask = np.array(raw_mask, dtype=np.uint8)
+
+            # 3. Soft alpha thresholding to guarantee delicate lamp stands, shades, and base stay intact
+            alpha = np.zeros_like(mask, dtype=np.uint8)
+            alpha[mask >= 8] = 255
+
+            # 4. Fill interior holes inside lampshades or bases
+            contours, hierarchy = cv2.findContours((alpha > 128).astype(np.uint8), cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+            if hierarchy is not None:
+                for i, h_info in enumerate(hierarchy[0]):
+                    if h_info[3] != -1:
+                        area = cv2.contourArea(contours[i])
+                        if area < 0.25 * (h * w):
+                            cv2.drawContours(alpha, contours, i, 255, -1)
+
+            # 5. Morphological close to bridge thin lamp rods/stands
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+            alpha = cv2.morphologyEx(alpha, cv2.MORPH_CLOSE, kernel)
+
+            # 6. Output RGBA using 100% UNTOUCHED ORIGINAL RGB PIXELS
+            rgba = cv2.cvtColor(img, cv2.COLOR_BGR2BGRA)
+            rgba[:, :, 3] = alpha
+
+            os.makedirs(os.path.dirname(cache_path), exist_ok=True)
+            cv2.imwrite(cache_path, rgba)
+            return web_path
+        except Exception as e:
+            print(f"Lamp extraction error: {e}")
+            try:
+                rgba = cv2.cvtColor(img, cv2.COLOR_BGR2BGRA)
+                rgba[:, :, 3] = 255
+                os.makedirs(os.path.dirname(cache_path), exist_ok=True)
+                cv2.imwrite(cache_path, rgba)
+                return web_path
+            except Exception:
+                return image_source
+
+    # =========================================================================
+    # TABLE & STUDY TABLE CATEGORY: TRUE ALPHA TRANSPARENCY SEGMENTATION
     # PRESERVES 100% ORIGINAL PIXELS, ONLY REMOVES BACKGROUND VIA ALPHA CHANNEL
     # =========================================================================
-    if cat_clean == "table":
+    if cat_clean in ["table", "study_table", "studytable", "study table", "desk"]:
         try:
             import rembg
             from PIL import Image
@@ -285,119 +401,69 @@ def extract_and_segment_object(image_source, category="bed", force_refresh=False
                 return image_source
 
     # =========================================================================
-    # 1. BED CATEGORY: 100% UNCHANGED EXISTING WORKING IMPLEMENTATION
+    # 1. BED CATEGORY: CLEAN HIGH-QUALITY BACKGROUND REMOVAL & ISOLATION
     # =========================================================================
     if cat_clean == "bed":
-        h, w = img.shape[:2]
-        model = get_seg_model()
-        target_synonyms = CATEGORY_SYNONYMS.get(cat_clean, [cat_clean])
-        best_idx = None
-        best_conf = 0.0
-        res = None
-
-        if model is not None:
-            try:
-                results = safe_yolo_predict(model, img, conf=0.10, imgsz=640)
-                if results and len(results) > 0:
-                    res = results[0]
-            except Exception as e:
-                print(f"Detection inference error: {e}")
-
-        # 1. Search for matching category among detections
-        if res is not None and res.boxes is not None and len(res.boxes) > 0:
-            for i, box in enumerate(res.boxes):
-                cls_id = int(box.cls[0])
-                cls_name = model.names.get(cls_id, "").lower() if hasattr(model, "names") else ""
-                conf = float(box.conf[0])
-                if any(s in cls_name or cls_name in s for s in target_synonyms):
-                    if conf > best_conf:
-                        best_conf = conf
-                        best_idx = i
-
-        # 2. If no exact category match, choose largest salient object
-        if best_idx is None and res is not None and res.boxes is not None and len(res.boxes) > 0:
-            areas = []
-            for i, box in enumerate(res.boxes):
-                xyxy = box.xyxy[0].cpu().numpy()
-                area = (xyxy[2] - xyxy[0]) * (xyxy[3] - xyxy[1])
-                areas.append((area, float(box.conf[0]), i))
-            areas.sort(reverse=True)
-            best_idx = areas[0][2]
-
-        rgba = cv2.cvtColor(img, cv2.COLOR_BGR2BGRA)
-
-        # 3. Apply Segmentation Mask if available
-        if best_idx is not None and res is not None and getattr(res, "masks", None) is not None and len(res.masks) > best_idx:
-            try:
-                mask_raw = res.masks.data[best_idx].cpu().numpy()
-                mask_resized = cv2.resize(mask_raw, (w, h), interpolation=cv2.INTER_LINEAR)
-                alpha = (mask_resized > 0.35).astype(np.uint8) * 255
-                
-                # Smooth mask edges for natural feathering
-                alpha = cv2.GaussianBlur(alpha, (5, 5), 0)
-                rgba[:, :, 3] = alpha
-
-                box = res.boxes[best_idx].xyxy[0].cpu().numpy().astype(int)
-                pad = 8
-                x1, y1 = max(0, box[0] - pad), max(0, box[1] - pad)
-                x2, y2 = min(w, box[2] + pad), min(h, box[3] + pad)
-                cropped = rgba[y1:y2, x1:x2]
-            except Exception as e:
-                print(f"Mask application error: {e}")
-                cropped = None
-        else:
-            cropped = None
-
-        # 4. Fallback: Bounding box GrabCut segmentation
-        if cropped is None and best_idx is not None and res is not None and res.boxes is not None:
-            try:
-                box = res.boxes[best_idx].xyxy[0].cpu().numpy().astype(int)
-                x1, y1 = max(0, box[0]), max(0, box[1])
-                x2, y2 = min(w, box[2]), min(h, box[3])
-                bw, bh = max(10, x2 - x1), max(10, y2 - y1)
-
-                rect = (x1, y1, bw, bh)
-                bgd_model = np.zeros((1, 65), np.float64)
-                fgd_model = np.zeros((1, 65), np.float64)
-                mask = np.zeros(img.shape[:2], np.uint8)
-                cv2.grabCut(img, mask, rect, bgd_model, fgd_model, 3, cv2.GC_INIT_WITH_RECT)
-                alpha = np.where((mask == 2) | (mask == 0), 0, 255).astype("uint8")
-                alpha = cv2.GaussianBlur(alpha, (5, 5), 0)
-                rgba[:, :, 3] = alpha
-
-                pad = 8
-                x1c, y1c = max(0, x1 - pad), max(0, y1 - pad)
-                x2c, y2c = min(w, x2 + pad), min(h, y2 + pad)
-                cropped = rgba[y1c:y2c, x1c:x2c]
-            except Exception as e:
-                print(f"GrabCut bbox error: {e}")
-                cropped = None
-
-        # 5. Last Fallback: Center salient GrabCut
-        if cropped is None:
-            try:
-                margin_x, margin_y = int(w * 0.05), int(h * 0.05)
-                rect = (margin_x, margin_y, w - 2 * margin_x, h - 2 * margin_y)
-                bgd_model = np.zeros((1, 65), np.float64)
-                fgd_model = np.zeros((1, 65), np.float64)
-                mask = np.zeros(img.shape[:2], np.uint8)
-                cv2.grabCut(img, mask, rect, bgd_model, fgd_model, 3, cv2.GC_INIT_WITH_RECT)
-                alpha = np.where((mask == 2) | (mask == 0), 0, 255).astype("uint8")
-                rgba[:, :, 3] = alpha
-                cropped = rgba
-            except Exception as e:
-                print(f"GrabCut fallback error: {e}")
-                cropped = rgba
-
-        if cropped is None or getattr(cropped, "size", 0) == 0:
-            cropped = rgba
-
         try:
+            # 1. Check for matching pre-extracted bed in furniture_dataset/extracted_beds
+            basename = os.path.basename(image_source)
+            for root_dir_cand in [ROOT_DIR, BASE_DIR]:
+                ext_cand_dir = os.path.join(root_dir_cand, "frontend", "public", "furniture_dataset", "extracted_beds")
+                if os.path.exists(ext_cand_dir):
+                    clean_b = basename.replace(".", "_")
+                    for f in os.listdir(ext_cand_dir):
+                        if clean_b in f:
+                            matched_path = os.path.join(ext_cand_dir, f)
+                            pre_img = cv2.imread(matched_path, cv2.IMREAD_UNCHANGED)
+                            if pre_img is not None and len(pre_img.shape) == 3 and pre_img.shape[2] == 4:
+                                os.makedirs(os.path.dirname(cache_path), exist_ok=True)
+                                cv2.imwrite(cache_path, pre_img)
+                                return web_path
+
+            # 2. Dynamic clean extraction with YOLO bed crop + rembg u2netp
+            h, w = img.shape[:2]
+            model = get_seg_model()
+            bed_box = None
+            best_conf = 0.0
+
+            if model is not None:
+                try:
+                    results = safe_yolo_predict(model, img, conf=0.15, imgsz=640)
+                    if results and len(results) > 0 and results[0].boxes is not None:
+                        for box in results[0].boxes:
+                            cls_id = int(box.cls[0])
+                            cls_name = model.names.get(cls_id, "").lower() if hasattr(model, "names") else ""
+                            conf = float(box.conf[0])
+                            if "bed" in cls_name and conf > best_conf:
+                                best_conf = conf
+                                bed_box = box.xyxy[0].cpu().numpy().astype(int)
+                except Exception as det_err:
+                    print(f"YOLO detection error for bed: {det_err}")
+
+            import rembg
+            from PIL import Image
+            session = rembg.new_session("u2netp")
+            pil_img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+
+            if bed_box is not None:
+                pad_x = int((bed_box[2] - bed_box[0]) * 0.04)
+                pad_y = int((bed_box[3] - bed_box[1]) * 0.04)
+                x1 = max(0, bed_box[0] - pad_x)
+                y1 = max(0, bed_box[1] - pad_y)
+                x2 = min(w, bed_box[2] + pad_x)
+                y2 = min(h, bed_box[3] + pad_y)
+                crop_pil = pil_img.crop((x1, y1, x2, y2))
+                clean_pil = rembg.remove(crop_pil, session=session)
+            else:
+                clean_pil = rembg.remove(pil_img, session=session)
+
+            clean_np = np.array(clean_pil)
+            clean_bgra = cv2.cvtColor(clean_np, cv2.COLOR_RGBA2BGRA)
             os.makedirs(os.path.dirname(cache_path), exist_ok=True)
-            cv2.imwrite(cache_path, cropped)
+            cv2.imwrite(cache_path, clean_bgra)
             return web_path
         except Exception as e:
-            print(f"Error saving extracted image {cache_path}: {e}")
+            print(f"Bed extraction error: {e}")
             return image_source
 
     # =========================================================================

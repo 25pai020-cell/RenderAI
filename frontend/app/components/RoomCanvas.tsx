@@ -39,6 +39,7 @@ export interface PlacedItem {
   category: string;
   price: number;
   image_url: string;
+  nochair_image_url?: string;
   pos_x: number; // 0 - 100%
   pos_y: number; // 0 - 100%
   scale: number; // 0.2 - 1.8 (Minimum 20%)
@@ -63,6 +64,7 @@ interface RoomCanvasProps {
   onUpdateItemScale: (id: string, scale: number) => void;
   onUpdateItemRotation?: (id: string, rotation: number) => void;
   onRemoveItem: (id: string) => void;
+  onRemoveChair?: (id: string) => void;
   onClearAll?: () => void;
   isLight?: boolean;
   onZoomPreview?: (url: string) => void;
@@ -85,6 +87,7 @@ export default function RoomCanvas({
   onUpdateItemScale,
   onUpdateItemRotation,
   onRemoveItem,
+  onRemoveChair,
   onClearAll,
   isLight = true,
   onZoomPreview,
@@ -325,6 +328,10 @@ export default function RoomCanvas({
   // Moving existing placed item on canvas
   const [draggingPlacedId, setDraggingPlacedId] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  // Resize state
+  const [resizingItemId, setResizingItemId] = useState<string | null>(null);
+  const [resizeStartPos, setResizeStartPos] = useState<{ x: number; y: number } | null>(null);
+  const [initialScale, setInitialScale] = useState<number>(1);
 
   // Handle external furniture drag over dropzone
   const handleDragOver = (e: React.DragEvent) => {
@@ -361,7 +368,6 @@ export default function RoomCanvas({
     const dropY = Math.max(15, Math.min(88, Math.round(((e.clientY - rect.top) / rect.height) * 100)));
 
     onDropItem(itemData, dropX, dropY);
-    setSelectedItemId(itemData.id);
   };
 
   // Mouse drag logic for repositioning placed items on canvas
@@ -407,6 +413,29 @@ export default function RoomCanvas({
     window.addEventListener("mouseup", handleGlobalMouseUp);
     return () => window.removeEventListener("mouseup", handleGlobalMouseUp);
   }, []);
+
+  // Resize handling effect
+  useEffect(() => {
+    if (!resizingItemId) return;
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!resizeStartPos) return;
+      const dx = e.clientX - resizeStartPos.x;
+      const dy = e.clientY - resizeStartPos.y;
+      const delta = (dx + dy) / 200; // simple scaling factor
+      const newScale = Math.max(0.2, Math.min(1.8, initialScale + delta));
+      onUpdateItemScale(resizingItemId, newScale);
+    };
+    const handleMouseUp = () => {
+      setResizingItemId(null);
+      setResizeStartPos(null);
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [resizingItemId, resizeStartPos, initialScale, onUpdateItemScale]);
 
   const totalCost = placedItems.reduce((acc, it) => acc + (it.price || 0), 0);
 
@@ -686,7 +715,6 @@ export default function RoomCanvas({
                     : "text-stone-300 hover:text-white"
                 }`}
               >
-                <span>🛋️</span>
                 <span>Auto Detected {detectedObjects?.length > 0 ? `(${detectedObjects.length})` : ""}</span>
               </button>
 
@@ -705,7 +733,6 @@ export default function RoomCanvas({
                     : "text-stone-300 hover:text-white"
                 }`}
               >
-                <span>🖌️</span>
                 <span>Brush / Select Area</span>
                 {hasManualSelection && (
                   <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
@@ -861,7 +888,6 @@ export default function RoomCanvas({
                   : "bg-slate-800 hover:bg-slate-700 text-stone-300 border border-slate-700"
               }`}
             >
-              <span>✂️</span>
               <span>
                 {hasManualSelection
                   ? "Remove Selected Area"
@@ -1118,6 +1144,51 @@ export default function RoomCanvas({
                   className="w-full h-auto object-contain drop-shadow-2xl pointer-events-none select-none block"
                   style={{ userSelect: "none" }}
                 />
+                {/* Resize handles - shown when item is selected */}
+                {isSelected && (
+                  <>
+                    {/* Top-left */}
+                    <div
+                      className="absolute -top-1 -left-1 w-3 h-3 bg-indigo-500 rounded-full cursor-nwse-resize"
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        setResizingItemId(item.id);
+                        setResizeStartPos({ x: e.clientX, y: e.clientY });
+                        setInitialScale(item.scale ?? 1);
+                      }}
+                    />
+                    {/* Top-right */}
+                    <div
+                      className="absolute -top-1 -right-1 w-3 h-3 bg-indigo-500 rounded-full cursor-nesw-resize"
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        setResizingItemId(item.id);
+                        setResizeStartPos({ x: e.clientX, y: e.clientY });
+                        setInitialScale(item.scale ?? 1);
+                      }}
+                    />
+                    {/* Bottom-left */}
+                    <div
+                      className="absolute -bottom-1 -left-1 w-3 h-3 bg-indigo-500 rounded-full cursor-nesw-resize"
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        setResizingItemId(item.id);
+                        setResizeStartPos({ x: e.clientX, y: e.clientY });
+                        setInitialScale(item.scale ?? 1);
+                      }}
+                    />
+                    {/* Bottom-right */}
+                    <div
+                      className="absolute -bottom-1 -right-1 w-3 h-3 bg-indigo-500 rounded-full cursor-nwse-resize"
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        setResizingItemId(item.id);
+                        setResizeStartPos({ x: e.clientX, y: e.clientY });
+                        setInitialScale(item.scale ?? 1);
+                      }}
+                    />
+                  </>
+                )}
 
                 {/* Subtle Quick Delete Icon on Hover / Selection */}
                 <button
@@ -1178,13 +1249,26 @@ export default function RoomCanvas({
               )}
             </div>
 
-            <button
-              suppressHydrationWarning
-              onClick={() => onRemoveItem(selectedItem.id)}
-              className="text-rose-600 hover:text-rose-700 font-semibold text-[11px] flex items-center gap-1 cursor-pointer ml-auto"
-            >
-              <FiTrash2 className="text-xs" /> Remove Piece
-            </button>
+            <div className="flex items-center gap-2.5 ml-auto">
+              {onRemoveChair && (selectedItem.nochair_image_url || selectedItem.label.toLowerCase().includes("chair")) && (
+                <button
+                  suppressHydrationWarning
+                  onClick={() => onRemoveChair(selectedItem.id)}
+                  className="text-amber-600 hover:text-amber-700 dark:text-amber-400 font-semibold text-[11px] flex items-center gap-1 cursor-pointer bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-lg border border-amber-200/60 dark:border-amber-800/60 transition"
+                  title="Remove the chair and keep only the study table"
+                >
+                  <span>🪑</span> Remove Chair
+                </button>
+              )}
+
+              <button
+                suppressHydrationWarning
+                onClick={() => onRemoveItem(selectedItem.id)}
+                className="text-rose-600 hover:text-rose-700 font-semibold text-[11px] flex items-center gap-1 cursor-pointer"
+              >
+                <FiTrash2 className="text-xs" /> Remove Piece
+              </button>
+            </div>
           </div>
 
           {/* Details Grid: Name, Price, Dimensions (L×W×H) + Fit Check, Material, Description */}
@@ -1219,12 +1303,17 @@ export default function RoomCanvas({
                       {selectedItem.label}
                     </h4>
                   </div>
-                  <span className={`text-[10px] capitalize mt-1 ${isLight ? "text-stone-500" : "text-stone-400"}`}>
-                    Category: {selectedItem.category}
-                  </span>
+                  <div className="flex items-center justify-between mt-1 gap-1 flex-wrap">
+                    <span className={`text-[10px] capitalize ${isLight ? "text-stone-500" : "text-stone-400"}`}>
+                      Category: {selectedItem.category}
+                    </span>
+                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">
+                      🏪 Ambica Furniture Shop
+                    </span>
+                  </div>
                 </div>
 
-                {/* 2. Price */}
+                {/* 2. Price & Total Amount */}
                 <div
                   className={`p-2.5 rounded-xl border flex flex-col justify-between ${
                     isLight ? "bg-white border-stone-200/80" : "bg-slate-900/80 border-slate-800"
@@ -1232,15 +1321,20 @@ export default function RoomCanvas({
                 >
                   <div>
                     <span className={`text-[10px] font-bold uppercase tracking-wider block ${isLight ? "text-stone-400" : "text-stone-500"}`}>
-                      Price
+                      Item Price
                     </span>
                     <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold text-sm block mt-0.5">
                       ₹{selectedItem.price.toLocaleString("en-IN")}
                     </span>
                   </div>
-                  <span className={`text-[10px] ${isLight ? "text-stone-500" : "text-stone-400"}`}>
-                    Catalog Verified Price
-                  </span>
+                  <div className="mt-1.5 pt-1.5 border-t border-stone-100 dark:border-slate-800 flex items-center justify-between">
+                    <span className={`text-[10px] font-semibold ${isLight ? "text-stone-600" : "text-stone-300"}`}>
+                      Total Amount:
+                    </span>
+                    <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold text-xs">
+                      ₹{totalCost.toLocaleString("en-IN")}
+                    </span>
+                  </div>
                 </div>
 
                 {/* 3. Furniture Size / Dimensions & Fit Check */}
