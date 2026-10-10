@@ -32,10 +32,17 @@ export default function Login() {
     if (e) e.preventDefault();
     setErrorMsg(null);
 
-    const cleanEmail = form.email.trim().toLowerCase();
+    let cleanEmail = form.email.trim().toLowerCase();
     if (!cleanEmail || !form.password) {
       setErrorMsg("Please enter both Email and Password.");
       return;
+    }
+
+    // Auto-fix common email domain typos like @gamil.com -> @gmail.com
+    if (cleanEmail.endsWith("@gamil.com")) {
+      cleanEmail = cleanEmail.replace("@gamil.com", "@gmail.com");
+    } else if (cleanEmail.endsWith("@gmial.com")) {
+      cleanEmail = cleanEmail.replace("@gmial.com", "@gmail.com");
     }
 
     try {

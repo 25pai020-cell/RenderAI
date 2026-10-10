@@ -5,11 +5,12 @@ export interface DatasetFurnitureItem {
   category: string;
   name: string;
   label: string;
-  budgetBracket: "buget_10k" | "buget_10k_to_20k" | "buget_20k_to_30k" | "buget_30k_to_40k" | "budget_10k_to_budget_30k" | "budget_30k_to_budget_50k" | "budget_50k_to_budget_70k" | string;
+  budgetBracket: "buget_10k" | "buget_10k_to_20k" | "buget_20k_to_30k" | "buget_30k_to_40k" | "budget_10k_to_budget_30k" | "budget_30k_to_budget_50k" | "budget_50k_to_budget_70k" | "buget_1k_to_3k" | "buget_4k_to_8k" | "buget_9k_to_15k" | string;
   budgetLabel: string;
   price: number;
   image_url: string;
   extracted_image_url?: string;
+  nochair_image_url?: string;
   dimensions: {
     length_ft: number;
     width_ft: number;
@@ -17,6 +18,7 @@ export interface DatasetFurnitureItem {
   };
   material?: string;
   description?: string;
+  shop?: string;
 }
 
 export interface FurnitureCategory {
@@ -31,37 +33,37 @@ export const DATASET_CATEGORIES: FurnitureCategory[] = [
   {
     key: "bed",
     label: "Bed",
-    icon: "🛏️",
+    icon: "",
     suggestedPlacements: ["Center Wall", "Master Bedroom Focus"],
     description: "Solid wood, platform, and upholstered designer beds from the dataset",
   },
   {
     key: "study_table",
     label: "Study Table",
-    icon: "💻",
+    icon: "",
     suggestedPlacements: ["Study Corner", "Window Wall", "Work Nook"],
     description: "Ergonomic study tables, desks, and workstations with transparent background",
   },
   {
     key: "lamp",
     label: "Night Lamp",
-    icon: "💡",
+    icon: "",
     suggestedPlacements: ["Bedside Corner", "Reading Corner"],
     description: "Warm ambient and bedside lighting fixtures",
   },
   {
     key: "side_table",
     label: "Side Table",
-    icon: "🪵",
+    icon: "",
     suggestedPlacements: ["Left Bedside", "Right Bedside", "Lounge Side"],
     description: "Solid wood, marble, and contemporary bedside & accent tables",
   },
   {
-    key: "chair",
-    label: "Accent Chair",
-    icon: "🪑",
-    suggestedPlacements: ["Accent Corner", "Desk Seating", "Reading Area"],
-    description: "Ergonomic, accent, and lounge chairs from the dataset",
+    key: "vase_plant",
+    label: "Vas / Wall Decore",
+    icon: "",
+    suggestedPlacements: ["Feature Wall", "Bedside / Tabletop", "Corner Accent"],
+    description: "Designer metal wall clocks, sculptural wall decor, botanicals, and artisanal vases",
   },
 ];
 
@@ -84,9 +86,27 @@ export const WARDROBE_BUDGET_TIERS = [
   { key: "budget_50k_to_budget_70k", label: "₹50,000–₹70,000", min: 50000, max: 70000, desc: "wardrobe/budget_50k_to_budget_70k/" },
 ];
 
+export const VASE_WALL_DECOR_BUDGET_TIERS = [
+  { key: "buget_1k_to_3k", label: "₹1,000–₹3,000", min: 1000, max: 3000, desc: "1k-3k Decor" },
+  { key: "buget_4k_to_8k", label: "₹4,000–₹8,000", min: 4000, max: 8000, desc: "4k-8k Decor" },
+  { key: "buget_9k_to_15k", label: "₹9,000–₹15,000", min: 9000, max: 15000, desc: "9k-15k Decor" },
+];
+
 export function getBudgetTiersForCategory(category?: string) {
   const norm = (category || "").toLowerCase().trim();
-  if (norm === "table") {
+  if (
+    norm === "vase_plant" ||
+    norm === "vase" ||
+    norm === "vas" ||
+    norm.includes("vase") ||
+    norm.includes("vas") ||
+    norm.includes("wall") ||
+    norm.includes("decor") ||
+    norm.includes("decore")
+  ) {
+    return VASE_WALL_DECOR_BUDGET_TIERS;
+  }
+  if (norm === "table" || norm === "side_table" || norm === "side table" || norm.includes("side_table") || norm.includes("sidetable")) {
     return TABLE_BUDGET_TIERS;
   }
   if (norm === "wardrobe") {
@@ -347,6 +367,73 @@ export const REAL_FURNITURE_DATASET: DatasetFurnitureItem[] = [
   },
 
   // ========================================================
+  {
+    id: "lamp_10k_1",
+    category: "lamp",
+    name: "lamp",
+    label: "Modern Minimalist Night Lamp",
+    budgetBracket: "buget_10k",
+    budgetLabel: "Under ₹10,000",
+    price: 7999,
+    image_url: "/furniture_dataset/lamp/buget_10k/lamp1.jpg",
+    dimensions: { length_ft: 1.2, width_ft: 1.2, height_ft: 2.5 },
+    material: "Matte White Plastic & LED",
+    description: "Sleek compact LED night lamp with touch dimmer and USB charging port."
+  },
+  {
+    id: "lamp_10k_2",
+    category: "lamp",
+    name: "lamp",
+    label: "Vintage Brass Table Lamp",
+    budgetBracket: "buget_10k",
+    budgetLabel: "Under ₹10,000",
+    price: 8999,
+    image_url: "/furniture_dataset/lamp/buget_10k/lamp2.jpg",
+    dimensions: { length_ft: 1.0, width_ft: 1.0, height_ft: 2.2 },
+    material: "Brass Finish with Fabric Shade",
+    description: "Classic brass base with soft fabric shade, perfect for bedside tables."
+  },
+  {
+    id: "lamp_10k_3",
+    category: "lamp",
+    name: "lamp",
+    label: "Industrial Metal Floor Lamp",
+    budgetBracket: "buget_10k",
+    budgetLabel: "Under ₹10,000",
+    price: 9799,
+    image_url: "/furniture_dataset/lamp/buget_10k/lamp3.jpg",
+    dimensions: { length_ft: 0.8, width_ft: 0.8, height_ft: 5.5 },
+    material: "Black Metal Frame & LED Tube",
+    description: "Tall floor lamp with industrial black metal framing and energy‑efficient LED tube."
+  },
+  {
+    id: "lamp_10k_4",
+    category: "lamp",
+    name: "lamp",
+    label: "Wooden Touch‑Control Lamp",
+    budgetBracket: "buget_10k",
+    budgetLabel: "Under ₹10,000",
+    price: 8299,
+    image_url: "/furniture_dataset/lamp/buget_10k/lamp4.jpg",
+    dimensions: { length_ft: 0.9, width_ft: 0.9, height_ft: 2.8 },
+    material: "Natural Oak Wood with Touch Sensor",
+    description: "Eco‑friendly oak tabletop lamp with touch‑activated dimming."
+  },
+  {
+    id: "lamp_10k_5",
+    category: "lamp",
+    name: "lamp",
+    label: "Smart Wi‑Fi LED Lamp",
+    budgetBracket: "buget_10k",
+    budgetLabel: "Under ₹10,000",
+    price: 9999,
+    image_url: "/furniture_dataset/lamp/buget_10k/lamp5.jpg",
+    dimensions: { length_ft: 1.1, width_ft: 1.1, height_ft: 2.4 },
+    material: "Aluminum Housing with Bluetooth Control",
+    description: "Smart lamp compatible with Alexa/Google Home, adjustable color temperature."
+  },
+  // ========================================================
+
   // TABLES - FROM furniture_dataset/table/
   // ========================================================
   // Range 1: ₹1–₹10,000 → table/budget_10k/
@@ -538,92 +625,83 @@ export const REAL_FURNITURE_DATASET: DatasetFurnitureItem[] = [
   },
 
   // ========================================================
-  // STUDY TABLES (100% TRANSPARENT BACKGROUND - NO ARTIFACTS)
+  // STUDY TABLES (FROM USER CATALOG ACCORDING TO BUDGET)
   // ========================================================
   // Tier 1: Under ₹10,000 (buget_10k)
   {
     id: "study_table_10k_1",
     category: "study_table",
     name: "study_table",
-    label: "Minimalist Solid Oak Study Desk",
+    label: "Modern Study Table + Chair Set",
     budgetBracket: "buget_10k",
     budgetLabel: "Under ₹10,000",
-    price: 4800,
-    image_url: "/furniture_dataset/study_table/study_table_1.png",
-    extracted_image_url: "/furniture_dataset/study_table/study_table_1.png",
+    price: 6499,
+    image_url: "/furniture_dataset/study_table/study_table_10k_1.jpg",
+    extracted_image_url: "/furniture_dataset/study_table/study_table_10k_1.png",
+    nochair_image_url: "/furniture_dataset/study_table/study_table_10k_1_nochair.png",
     dimensions: { length_ft: 3.8, width_ft: 2.0, height_ft: 2.5 },
-    material: "Solid Oak & Smooth-Glide Drawer",
-    description: "Sleek ergonomic study desk with integrated drawer, tapered solid oak legs, and clean writing surface.",
+    material: "Engineered Wood + Metal | Oak & White",
+    description: "Compact design, storage shelf, modern study table with matching chair.",
   },
   {
     id: "study_table_10k_2",
     category: "study_table",
     name: "study_table",
-    label: "Compact Multi-Tier Bookshelf Study Table",
+    label: "Classic Wooden Study Table + Chair",
     budgetBracket: "buget_10k",
     budgetLabel: "Under ₹10,000",
-    price: 6500,
-    image_url: "/furniture_dataset/study_table/study_table_compact_shelf.png",
-    extracted_image_url: "/furniture_dataset/study_table/study_table_compact_shelf.png",
-    dimensions: { length_ft: 4.0, width_ft: 1.8, height_ft: 3.8 },
-    material: "Engineered Wood & White Powder-Coated Metal",
-    description: "Multi-functional study station featuring integrated vertical bookshelf racks and bottom organizer tray.",
+    price: 7999,
+    image_url: "/furniture_dataset/study_table/study_table_10k_2.jpg",
+    extracted_image_url: "/furniture_dataset/study_table/study_table_10k_2.png",
+    nochair_image_url: "/furniture_dataset/study_table/study_table_10k_2_nochair.png",
+    dimensions: { length_ft: 4.0, width_ft: 2.0, height_ft: 2.5 },
+    material: "Engineered Wood | Walnut Brown",
+    description: "Drawer + cabinet, sturdy chair with cushion.",
   },
   {
     id: "study_table_10k_3",
     category: "study_table",
     name: "study_table",
-    label: "Industrial Matte Frame Study Table",
+    label: "Ergonomic Study Table + Chair",
     budgetBracket: "buget_10k",
     budgetLabel: "Under ₹10,000",
-    price: 7200,
-    image_url: "/furniture_dataset/study_table/study_table_industrial.png",
-    extracted_image_url: "/furniture_dataset/study_table/study_table_industrial.png",
-    dimensions: { length_ft: 4.2, width_ft: 2.0, height_ft: 2.5 },
-    material: "Reinforced Alloy Steel & Rustic Oak Top",
-    description: "Robust industrial study table with double book storage tiers and reinforced heavy-duty metal chassis.",
+    price: 8499,
+    image_url: "/furniture_dataset/study_table/study_table_10k_3.jpg",
+    extracted_image_url: "/furniture_dataset/study_table/study_table_10k_3.png",
+    nochair_image_url: "/furniture_dataset/study_table/study_table_10k_3_nochair.png",
+    dimensions: { length_ft: 4.0, width_ft: 2.0, height_ft: 2.5 },
+    material: "MDF + Metal | White & Grey",
+    description: "Spacious top, breathable mesh chair.",
   },
   {
     id: "study_table_10k_4",
     category: "study_table",
     name: "study_table",
-    label: "Modern Dual-Drawer White Study Desk",
+    label: "Space Saving Study Table + Chair",
     budgetBracket: "buget_10k",
     budgetLabel: "Under ₹10,000",
-    price: 8400,
-    image_url: "/furniture_dataset/study_table/study_table_white_drawers.png",
-    extracted_image_url: "/furniture_dataset/study_table/study_table_white_drawers.png",
-    dimensions: { length_ft: 4.0, width_ft: 2.0, height_ft: 2.5 },
-    material: "Matte White Lacquer & Beech Wood Legs",
-    description: "Contemporary Scandinavian white study desk with brass edge pulls and two smooth organizer drawers.",
+    price: 8999,
+    image_url: "/furniture_dataset/study_table/study_table_10k_4.jpg",
+    extracted_image_url: "/furniture_dataset/study_table/study_table_10k_4.png",
+    nochair_image_url: "/furniture_dataset/study_table/study_table_10k_4_nochair.png",
+    dimensions: { length_ft: 3.5, width_ft: 2.0, height_ft: 4.0 },
+    material: "Particle Board | Light Wood",
+    description: "Bookshelf, compact size, modern space-saving design.",
   },
   {
     id: "study_table_10k_5",
     category: "study_table",
     name: "study_table",
-    label: "Space-Saving Wall-Mounted Floating Study Desk",
+    label: "Sleek Study Table + Chair",
     budgetBracket: "buget_10k",
     budgetLabel: "Under ₹10,000",
-    price: 5900,
-    image_url: "/furniture_dataset/study_table/study_table_floating.png",
-    extracted_image_url: "/furniture_dataset/study_table/study_table_floating.png",
-    dimensions: { length_ft: 3.2, width_ft: 1.6, height_ft: 1.8 },
-    material: "Natural Oak Veneer & Heavy-Duty Wall Anchors",
-    description: "Foldaway floating wall study desk with interior stationery dividers and drop-down work surface.",
-  },
-  {
-    id: "study_table_10k_6",
-    category: "study_table",
-    name: "study_table",
-    label: "Natural Bleached Oak Compact Study Desk",
-    budgetBracket: "buget_10k",
-    budgetLabel: "Under ₹10,000",
-    price: 9200,
-    image_url: "/furniture_dataset/study_table/study_table_bleached_oak.png",
-    extracted_image_url: "/furniture_dataset/study_table/study_table_bleached_oak.png",
-    dimensions: { length_ft: 3.8, width_ft: 2.0, height_ft: 2.5 },
-    material: "Solid Bleached Oak Hardwood",
-    description: "Clean architectural study table crafted with minimalist wooden joinery and scratch-resistant satin top.",
+    price: 9499,
+    image_url: "/furniture_dataset/study_table/study_table_10k_5.jpg",
+    extracted_image_url: "/furniture_dataset/study_table/study_table_10k_5.png",
+    nochair_image_url: "/furniture_dataset/study_table/study_table_10k_5_nochair.png",
+    dimensions: { length_ft: 4.0, width_ft: 2.0, height_ft: 2.5 },
+    material: "Metal + Glass | Black",
+    description: "Stylish look, strong frame, comfortable chair.",
   },
 
   // Tier 2: ₹10,000 - ₹20,000 (buget_10k_to_20k)
@@ -631,85 +709,76 @@ export const REAL_FURNITURE_DATASET: DatasetFurnitureItem[] = [
     id: "study_table_20k_1",
     category: "study_table",
     name: "study_table",
-    label: "Handcrafted Solid Sheesham Study Desk with Drawers",
+    label: "Wooden Study Table + Chair Set",
     budgetBracket: "buget_10k_to_20k",
     budgetLabel: "₹10,000 - ₹20,000",
-    price: 13500,
-    image_url: "/furniture_dataset/study_table/study_table_sheesham.png",
-    extracted_image_url: "/furniture_dataset/study_table/study_table_sheesham.png",
-    dimensions: { length_ft: 4.2, width_ft: 2.2, height_ft: 2.6 },
-    material: "Solid Sheesham Wood & Antique Brass Handles",
-    description: "Authentic handcrafted Indian Rosewood study table with three spacious storage drawers and natural grain finish.",
+    price: 12999,
+    image_url: "/furniture_dataset/study_table/study_table_20k_1.jpg",
+    extracted_image_url: "/furniture_dataset/study_table/study_table_20k_1.png",
+    nochair_image_url: "/furniture_dataset/study_table/study_table_20k_1_nochair.png",
+    dimensions: { length_ft: 4.2, width_ft: 2.0, height_ft: 2.5 },
+    material: "Engineered Wood | Oak Finish",
+    description: "Spacious top, storage drawers, cushioned chair (₹10,999 – ₹14,999).",
   },
   {
     id: "study_table_20k_2",
     category: "study_table",
     name: "study_table",
-    label: "Artisan Teak Study Table with Brass Cup Handles",
+    label: "Metal Frame Study Table + Chair Set",
     budgetBracket: "buget_10k_to_20k",
     budgetLabel: "₹10,000 - ₹20,000",
-    price: 15800,
-    image_url: "/furniture_dataset/study_table/study_table_antique_brass_teak.png",
-    extracted_image_url: "/furniture_dataset/study_table/study_table_antique_brass_teak.png",
-    dimensions: { length_ft: 4.4, width_ft: 2.2, height_ft: 2.6 },
-    material: "Solid Teakwood & Antique Brass Hardware",
-    description: "Heritage solid wood study workstation featuring side pedestal storage and smooth dovetail drawer construction.",
+    price: 14499,
+    image_url: "/furniture_dataset/study_table/study_table_20k_2.jpg",
+    extracted_image_url: "/furniture_dataset/study_table/study_table_20k_2.png",
+    nochair_image_url: "/furniture_dataset/study_table/study_table_20k_2_nochair.png",
+    dimensions: { length_ft: 4.2, width_ft: 2.0, height_ft: 2.5 },
+    material: "Metal + Engineered Wood | Walnut & Black",
+    description: "Strong frame, modern design, ergonomic chair (₹11,999 – ₹16,999).",
   },
   {
     id: "study_table_20k_3",
     category: "study_table",
     name: "study_table",
-    label: "Nordic Amber Birch Ergonomic Workstation",
+    label: "Study Table with Shelf + Chair Set",
     budgetBracket: "buget_10k_to_20k",
     budgetLabel: "₹10,000 - ₹20,000",
-    price: 12900,
-    image_url: "/furniture_dataset/study_table/study_table_nordic_amber.png",
-    extracted_image_url: "/furniture_dataset/study_table/study_table_nordic_amber.png",
-    dimensions: { length_ft: 4.2, width_ft: 2.2, height_ft: 2.5 },
-    material: "Natural Amber Birch Wood & Hidden Wire Channel",
-    description: "Ergonomic study desk designed with subtle curved front edge, integrated cord management, and warm lacquer.",
+    price: 15499,
+    image_url: "/furniture_dataset/study_table/study_table_20k_3.jpg",
+    extracted_image_url: "/furniture_dataset/study_table/study_table_20k_3.png",
+    nochair_image_url: "/furniture_dataset/study_table/study_table_20k_3_nochair.png",
+    dimensions: { length_ft: 4.2, width_ft: 2.0, height_ft: 4.2 },
+    material: "Engineered Wood | White",
+    description: "Storage shelves, drawer, compact design (₹12,999 – ₹17,999).",
   },
   {
     id: "study_table_20k_4",
     category: "study_table",
     name: "study_table",
-    label: "Scandinavian Beech Bookshelf Tower Study Table",
+    label: "Classic Study Table + Chair Set",
     budgetBracket: "buget_10k_to_20k",
     budgetLabel: "₹10,000 - ₹20,000",
-    price: 14200,
-    image_url: "/furniture_dataset/study_table/study_table_scandi_beech_shelf.png",
-    extracted_image_url: "/furniture_dataset/study_table/study_table_scandi_beech_shelf.png",
-    dimensions: { length_ft: 4.5, width_ft: 2.0, height_ft: 4.0 },
-    material: "Solid Beech & High-Density Core",
-    description: "Modern workstation with tall vertical bookshelf tower, stationery shelf, and wide writing desk.",
+    price: 16499,
+    image_url: "/furniture_dataset/study_table/study_table_20k_4.jpg",
+    extracted_image_url: "/furniture_dataset/study_table/study_table_20k_4.png",
+    nochair_image_url: "/furniture_dataset/study_table/study_table_20k_4_nochair.png",
+    dimensions: { length_ft: 4.5, width_ft: 2.2, height_ft: 2.6 },
+    material: "Sheesham Wood | Walnut Finish",
+    description: "Durable, spacious storage, cushioned chair (₹13,999 – ₹18,999).",
   },
   {
     id: "study_table_20k_5",
     category: "study_table",
     name: "study_table",
-    label: "Rustic Graphite Timber Study Workstation",
+    label: "L-Shape Study Table + Chair Set",
     budgetBracket: "buget_10k_to_20k",
     budgetLabel: "₹10,000 - ₹20,000",
-    price: 16500,
-    image_url: "/furniture_dataset/study_table/study_table_rustic_graphite.png",
-    extracted_image_url: "/furniture_dataset/study_table/study_table_rustic_graphite.png",
-    dimensions: { length_ft: 4.5, width_ft: 2.2, height_ft: 2.6 },
-    material: "Smoked Oak & Graphite Steel Chassis",
-    description: "Contemporary urban study table featuring dual open shelves for books, laptop, and stationery.",
-  },
-  {
-    id: "study_table_20k_6",
-    category: "study_table",
-    name: "study_table",
-    label: "Classic Oak Writing & Computer Study Table",
-    budgetBracket: "buget_10k_to_20k",
-    budgetLabel: "₹10,000 - ₹20,000",
-    price: 18400,
-    image_url: "/furniture_dataset/study_table/study_table_oak_minimal.png",
-    extracted_image_url: "/furniture_dataset/study_table/study_table_oak_minimal.png",
-    dimensions: { length_ft: 4.6, width_ft: 2.2, height_ft: 2.5 },
-    material: "Kiln-Dried American Oak",
-    description: "Premium wide-top study table crafted with reinforced apron and water-resistant protective lacquer.",
+    price: 17999,
+    image_url: "/furniture_dataset/study_table/study_table_20k_5.jpg",
+    extracted_image_url: "/furniture_dataset/study_table/study_table_20k_5.png",
+    nochair_image_url: "/furniture_dataset/study_table/study_table_20k_5_nochair.png",
+    dimensions: { length_ft: 4.8, width_ft: 3.2, height_ft: 2.6 },
+    material: "Engineered Wood + Metal | Natural Wood & White",
+    description: "Extra storage shelves, modern look, comfortable chair (₹15,999 – ₹19,999).",
   },
 
   // Tier 3: ₹20,000 - ₹30,000 (buget_20k_to_30k)
@@ -717,85 +786,76 @@ export const REAL_FURNITURE_DATASET: DatasetFurnitureItem[] = [
     id: "study_table_30k_1",
     category: "study_table",
     name: "study_table",
-    label: "Executive Espresso Walnut Study Desk",
+    label: "Wooden Study Table + Chair Set",
     budgetBracket: "buget_20k_to_30k",
     budgetLabel: "₹20,000 - ₹30,000",
-    price: 22500,
-    image_url: "/furniture_dataset/study_table/study_table_espresso_walnut.png",
-    extracted_image_url: "/furniture_dataset/study_table/study_table_espresso_walnut.png",
-    dimensions: { length_ft: 4.8, width_ft: 2.4, height_ft: 2.6 },
-    material: "American Walnut & Brushed Brass Accent",
-    description: "Executive study desk with rich espresso finish, concealed cable management, and velvet-lined drawer.",
+    price: 22499,
+    image_url: "/furniture_dataset/study_table/study_table_30k_1.jpg",
+    extracted_image_url: "/furniture_dataset/study_table/study_table_30k_1.png",
+    nochair_image_url: "/furniture_dataset/study_table/study_table_30k_1_nochair.png",
+    dimensions: { length_ft: 4.5, width_ft: 2.2, height_ft: 2.6 },
+    material: "Engineered Wood | Walnut Finish",
+    description: "Spacious top, drawer + cabinet, cushioned chair.",
   },
   {
     id: "study_table_30k_2",
     category: "study_table",
     name: "study_table",
-    label: "Rosewood Artisan 3-Drawer Executive Study Table",
+    label: "Metal Frame Study Table + Chair Set",
     budgetBracket: "buget_20k_to_30k",
     budgetLabel: "₹20,000 - ₹30,000",
-    price: 24800,
-    image_url: "/furniture_dataset/study_table/study_table_rosewood_artisan.png",
-    extracted_image_url: "/furniture_dataset/study_table/study_table_rosewood_artisan.png",
-    dimensions: { length_ft: 4.8, width_ft: 2.4, height_ft: 2.6 },
-    material: "Solid Natural Rosewood & Antiqued Brass Handles",
-    description: "Heirloom-grade solid rosewood study table with 3 deep storage drawers and hand-rubbed oil finish.",
+    price: 19999,
+    image_url: "/furniture_dataset/study_table/study_table_30k_2.jpg",
+    extracted_image_url: "/furniture_dataset/study_table/study_table_30k_2.png",
+    nochair_image_url: "/furniture_dataset/study_table/study_table_30k_2_nochair.png",
+    dimensions: { length_ft: 4.4, width_ft: 2.2, height_ft: 2.6 },
+    material: "Metal + Engineered Wood | Oak & Black",
+    description: "Modern design, ergonomic chair, keyboard shelf.",
   },
   {
     id: "study_table_30k_3",
     category: "study_table",
     name: "study_table",
-    label: "Matte Black Dual-Drawer Architect Study Desk",
+    label: "Study Table with Shelf + Chair Set",
     budgetBracket: "buget_20k_to_30k",
     budgetLabel: "₹20,000 - ₹30,000",
-    price: 26500,
-    image_url: "/furniture_dataset/study_table/study_table_matte_black_drawers.png",
-    extracted_image_url: "/furniture_dataset/study_table/study_table_matte_black_drawers.png",
-    dimensions: { length_ft: 5.0, width_ft: 2.4, height_ft: 2.6 },
-    material: "Satin Matte Black Lacquer & Gold Accents",
-    description: "Architectural study desk offering sleek geometric silhouette, soft-close hardware, and satin brass pulls.",
+    price: 26999,
+    image_url: "/furniture_dataset/study_table/study_table_30k_3.jpg",
+    extracted_image_url: "/furniture_dataset/study_table/study_table_30k_3.png",
+    nochair_image_url: "/furniture_dataset/study_table/study_table_30k_3_nochair.png",
+    dimensions: { length_ft: 4.4, width_ft: 2.2, height_ft: 4.2 },
+    material: "Engineered Wood | White",
+    description: "Bookshelf, drawer, cabinet, comfortable chair.",
   },
   {
     id: "study_table_30k_4",
     category: "study_table",
     name: "study_table",
-    label: "Vintage Mahogany Writing & Study Desk",
+    label: "Marble Top Study Table + Chair Set",
     budgetBracket: "buget_20k_to_30k",
     budgetLabel: "₹20,000 - ₹30,000",
-    price: 28200,
-    image_url: "/furniture_dataset/study_table/study_table_vintage_mahogany.png",
-    extracted_image_url: "/furniture_dataset/study_table/study_table_vintage_mahogany.png",
-    dimensions: { length_ft: 4.8, width_ft: 2.4, height_ft: 2.6 },
-    material: "Solid Mahogany Hardwood",
-    description: "Refined vintage study desk featuring classical turned legs and spacious surface for multi-monitor setups.",
+    price: 28499,
+    image_url: "/furniture_dataset/study_table/study_table_30k_4.jpg",
+    extracted_image_url: "/furniture_dataset/study_table/study_table_30k_4.png",
+    nochair_image_url: "/furniture_dataset/study_table/study_table_30k_4_nochair.png",
+    dimensions: { length_ft: 4.6, width_ft: 2.2, height_ft: 2.6 },
+    material: "Metal + MDF (Marble Finish) | White & Black",
+    description: "Stylish marble top, drawer, premium upholstered chair.",
   },
   {
     id: "study_table_30k_5",
     category: "study_table",
     name: "study_table",
-    label: "Warm Natural Teak Professional Study Table",
+    label: "L-Shaped Study Table + Chair Set",
     budgetBracket: "buget_20k_to_30k",
     budgetLabel: "₹20,000 - ₹30,000",
-    price: 23900,
-    image_url: "/furniture_dataset/study_table/study_table_warm_teak.png",
-    extracted_image_url: "/furniture_dataset/study_table/study_table_warm_teak.png",
-    dimensions: { length_ft: 4.6, width_ft: 2.4, height_ft: 2.6 },
-    material: "Selected Grade-A Teakwood",
-    description: "Premium study table boasting rich warm golden-brown teak grain, ergonomic rounded edges, and heavy solid build.",
-  },
-  {
-    id: "study_table_30k_6",
-    category: "study_table",
-    name: "study_table",
-    label: "Floating Dark Oak Minimalist Executive Desk",
-    budgetBracket: "buget_20k_to_30k",
-    budgetLabel: "₹20,000 - ₹30,000",
-    price: 21900,
-    image_url: "/furniture_dataset/study_table/study_table_floating_dark_oak.png",
-    extracted_image_url: "/furniture_dataset/study_table/study_table_floating_dark_oak.png",
-    dimensions: { length_ft: 4.0, width_ft: 1.8, height_ft: 1.8 },
-    material: "Smoked Dark Oak & Concealed Heavy Brackets",
-    description: "Contemporary floating executive study desk with hidden push-to-open organizer cubbies and clean floor clearance.",
+    price: 24999,
+    image_url: "/furniture_dataset/study_table/study_table_30k_5.jpg",
+    extracted_image_url: "/furniture_dataset/study_table/study_table_30k_5.png",
+    nochair_image_url: "/furniture_dataset/study_table/study_table_30k_5_nochair.png",
+    dimensions: { length_ft: 5.0, width_ft: 3.5, height_ft: 3.8 },
+    material: "Engineered Wood + Metal | Wenge & Grey",
+    description: "L-shape design, multiple shelves, ergonomic chair.",
   },
 
   // Tier 4: ₹30,000 - ₹40,000+ (buget_30k_to_40k)
@@ -803,85 +863,76 @@ export const REAL_FURNITURE_DATASET: DatasetFurnitureItem[] = [
     id: "study_table_40k_1",
     category: "study_table",
     name: "study_table",
-    label: "Executive Charcoal Walnut Presidential Study Desk",
+    label: "Wooden Study Table + Chair Set",
     budgetBracket: "buget_30k_to_40k",
     budgetLabel: "₹30,000 - ₹40,000+",
-    price: 34500,
-    image_url: "/furniture_dataset/study_table/study_table_executive_charcoal.png",
-    extracted_image_url: "/furniture_dataset/study_table/study_table_executive_charcoal.png",
-    dimensions: { length_ft: 5.5, width_ft: 2.6, height_ft: 2.6 },
-    material: "Charcoal Stained Walnut & Matte Black Steel",
-    description: "Presidential executive study workstation with wide workspace, cable grommets, and dual storage bays.",
+    price: 32999,
+    image_url: "/furniture_dataset/study_table/study_table_40k_1.jpg",
+    extracted_image_url: "/furniture_dataset/study_table/study_table_40k_1.png",
+    nochair_image_url: "/furniture_dataset/study_table/study_table_40k_1_nochair.png",
+    dimensions: { length_ft: 5.0, width_ft: 2.4, height_ft: 2.6 },
+    material: "Solid Wood (Sheesham) | Walnut Finish",
+    description: "Executive solid wood top, triple storage drawers, sturdy matching chair.",
   },
   {
     id: "study_table_40k_2",
     category: "study_table",
     name: "study_table",
-    label: "Raw Steel & Timber Architectural Study Battlestation",
+    label: "Modern Study Table + Chair Set",
     budgetBracket: "buget_30k_to_40k",
     budgetLabel: "₹30,000 - ₹40,000+",
-    price: 32800,
-    image_url: "/furniture_dataset/study_table/study_table_raw_steel_timber.png",
-    extracted_image_url: "/furniture_dataset/study_table/study_table_raw_steel_timber.png",
-    dimensions: { length_ft: 5.4, width_ft: 2.6, height_ft: 2.6 },
-    material: "Hand-Welded Steel & Solid Reclaimed Hardwood",
-    description: "Architectural study battlestation with expansive desk area, lower reference bookshelf, and industrial aesthetic.",
+    price: 36999,
+    image_url: "/furniture_dataset/study_table/study_table_40k_2.jpg",
+    extracted_image_url: "/furniture_dataset/study_table/study_table_40k_2.png",
+    nochair_image_url: "/furniture_dataset/study_table/study_table_40k_2_nochair.png",
+    dimensions: { length_ft: 5.0, width_ft: 2.4, height_ft: 4.2 },
+    material: "Engineered Wood + Metal | Grey & Wood Finish",
+    description: "Overhead hutch shelves, side drawers, ergonomic swivel mesh chair.",
   },
   {
     id: "study_table_40k_3",
     category: "study_table",
     name: "study_table",
-    label: "Nordic Heritage Solid Wood Master Study Desk",
+    label: "Study Table with Shelf + Chair Set",
     budgetBracket: "buget_30k_to_40k",
     budgetLabel: "₹30,000 - ₹40,000+",
-    price: 36900,
-    image_url: "/furniture_dataset/study_table/study_table_nordic_wood.png",
-    extracted_image_url: "/furniture_dataset/study_table/study_table_nordic_wood.png",
-    dimensions: { length_ft: 5.2, width_ft: 2.6, height_ft: 2.6 },
-    material: "Solid Scandinavian Hardwood & Satin Lacquer",
-    description: "Master study desk featuring traditional mortise and tenon joinery, expansive writing depth, and refined durability.",
+    price: 38999,
+    image_url: "/furniture_dataset/study_table/study_table_40k_3.jpg",
+    extracted_image_url: "/furniture_dataset/study_table/study_table_40k_3.png",
+    nochair_image_url: "/furniture_dataset/study_table/study_table_40k_3_nochair.png",
+    dimensions: { length_ft: 4.6, width_ft: 2.2, height_ft: 4.4 },
+    material: "MDF Board | White & Pink",
+    description: "Integrated bookshelf hutch, storage cabinet, luxury velvet chair.",
   },
   {
     id: "study_table_40k_4",
     category: "study_table",
     name: "study_table",
-    label: "Soft Grey Atelier Designer Study Desk",
+    label: "L-Shaped Study Table + Chair Set",
     budgetBracket: "buget_30k_to_40k",
     budgetLabel: "₹30,000 - ₹40,000+",
-    price: 35200,
-    image_url: "/furniture_dataset/study_table/study_table_soft_grey_minimal.png",
-    extracted_image_url: "/furniture_dataset/study_table/study_table_soft_grey_minimal.png",
-    dimensions: { length_ft: 5.0, width_ft: 2.5, height_ft: 2.6 },
-    material: "Custom Atelier Grey Finish & Brushed Brass",
-    description: "Designer study desk with dual quiet-glide storage compartments, wireless charging cutout, and champagne brass legs.",
+    price: 39999,
+    image_url: "/furniture_dataset/study_table/study_table_40k_4.jpg",
+    extracted_image_url: "/furniture_dataset/study_table/study_table_40k_4.png",
+    nochair_image_url: "/furniture_dataset/study_table/study_table_40k_4_nochair.png",
+    dimensions: { length_ft: 5.4, width_ft: 3.8, height_ft: 2.6 },
+    material: "Engineered Wood + Metal | Dark Walnut & Black",
+    description: "L-shaped executive workstation, 3 drawers, ergonomic headrest chair.",
   },
   {
     id: "study_table_40k_5",
     category: "study_table",
     name: "study_table",
-    label: "Dark Walnut Deluxe Writing & Study Desk",
+    label: "Premium Study Table + Chair Set",
     budgetBracket: "buget_30k_to_40k",
     budgetLabel: "₹30,000 - ₹40,000+",
-    price: 38500,
-    image_url: "/furniture_dataset/study_table/study_table_dark_walnut.png",
-    extracted_image_url: "/furniture_dataset/study_table/study_table_dark_walnut.png",
-    dimensions: { length_ft: 5.6, width_ft: 2.6, height_ft: 2.6 },
-    material: "Prime Dark Walnut & Hand-Polished Wax Finish",
-    description: "Opulent executive study table offering luxury proportions, deep rich walnut grain, and dual organizers.",
-  },
-  {
-    id: "study_table_40k_6",
-    category: "study_table",
-    name: "study_table",
-    label: "Bespoke Classic Writing & Study Station",
-    budgetBracket: "buget_30k_to_40k",
-    budgetLabel: "₹30,000 - ₹40,000+",
-    price: 39900,
-    image_url: "/furniture_dataset/study_table/study_table_classic_writing.png",
-    extracted_image_url: "/furniture_dataset/study_table/study_table_classic_writing.png",
-    dimensions: { length_ft: 5.5, width_ft: 2.6, height_ft: 2.6 },
-    material: "Solid Hardwood with Fluted Legs",
-    description: "Flagship luxury study station custom-built for high-productivity workspaces and executive home offices.",
+    price: 40999,
+    image_url: "/furniture_dataset/study_table/study_table_40k_5.jpg",
+    extracted_image_url: "/furniture_dataset/study_table/study_table_40k_5.png",
+    nochair_image_url: "/furniture_dataset/study_table/study_table_40k_5_nochair.png",
+    dimensions: { length_ft: 4.8, width_ft: 2.4, height_ft: 2.6 },
+    material: "Marble Top + Metal | White & Gold",
+    description: "Marble finish top, dual drawers, gold frame, premium upholstered chair.",
   },
 
   // ==========================================
@@ -897,6 +948,7 @@ export const REAL_FURNITURE_DATASET: DatasetFurnitureItem[] = [
     budgetLabel: "Under ₹10,000",
     price: 1850,
     image_url: "/furniture_dataset/lamp/buget_10k/lamp1.jpg",
+    extracted_image_url: "/furniture_dataset/lamp/buget_10k/lamp1.png",
     dimensions: { length_ft: 1.0, width_ft: 1.0, height_ft: 1.6 },
     material: "Ceramic & Linen Shade",
     description: "Warm 2700K ambient bedside glow with natural textured fabric shade.",
@@ -910,6 +962,7 @@ export const REAL_FURNITURE_DATASET: DatasetFurnitureItem[] = [
     budgetLabel: "Under ₹10,000",
     price: 3200,
     image_url: "/furniture_dataset/lamp/buget_10k/lamp2.jpg",
+    extracted_image_url: "/furniture_dataset/lamp/buget_10k/lamp2.png",
     dimensions: { length_ft: 1.2, width_ft: 1.2, height_ft: 2.2 },
     material: "Brushed Brass & Frosted Glass",
     description: "Sculptural brass accent light ideal for corner or bedside illumination.",
@@ -923,6 +976,7 @@ export const REAL_FURNITURE_DATASET: DatasetFurnitureItem[] = [
     budgetLabel: "Under ₹10,000",
     price: 4500,
     image_url: "/furniture_dataset/lamp/buget_10k/lamp3.jpg",
+    extracted_image_url: "/furniture_dataset/lamp/buget_10k/lamp3.png",
     dimensions: { length_ft: 1.1, width_ft: 1.1, height_ft: 1.8 },
     material: "Opal Glass & Matte Base",
     description: "Soft diffuse globe emitting calming ambient light for peaceful sleep.",
@@ -936,6 +990,7 @@ export const REAL_FURNITURE_DATASET: DatasetFurnitureItem[] = [
     budgetLabel: "Under ₹10,000",
     price: 6800,
     image_url: "/furniture_dataset/lamp/buget_10k/lamp4.png",
+    extracted_image_url: "/furniture_dataset/lamp/buget_10k/lamp4.png",
     dimensions: { length_ft: 1.2, width_ft: 1.2, height_ft: 2.0 },
     material: "Washi Paper & Bamboo Frame",
     description: "Traditional zen-inspired paper lantern light creating soothing mood warmth.",
@@ -951,6 +1006,7 @@ export const REAL_FURNITURE_DATASET: DatasetFurnitureItem[] = [
     budgetLabel: "₹10,000 - ₹20,000",
     price: 11500,
     image_url: "/furniture_dataset/lamp/buget_10k_to_20k/lamp5.jpg",
+    extracted_image_url: "/furniture_dataset/lamp/buget_10k_to_20k/lamp5.png",
     dimensions: { length_ft: 1.5, width_ft: 1.5, height_ft: 5.2 },
     material: "Matte Black Steel & Smoked Glass",
     description: "Statement architectural floor lighting for elevated bedroom corners.",
@@ -964,6 +1020,7 @@ export const REAL_FURNITURE_DATASET: DatasetFurnitureItem[] = [
     budgetLabel: "₹10,000 - ₹20,000",
     price: 13800,
     image_url: "/furniture_dataset/lamp/buget_10k_to_20k/lamp7.jpg",
+    extracted_image_url: "/furniture_dataset/lamp/buget_10k_to_20k/lamp7.png",
     dimensions: { length_ft: 1.3, width_ft: 1.3, height_ft: 2.4 },
     material: "Smoked Grey Glass & Gold Core",
     description: "Refined geometric bedside fixture with three-step touch dimming.",
@@ -977,6 +1034,7 @@ export const REAL_FURNITURE_DATASET: DatasetFurnitureItem[] = [
     budgetLabel: "₹10,000 - ₹20,000",
     price: 15900,
     image_url: "/furniture_dataset/lamp/buget_10k_to_20k/lamp8.jpg",
+    extracted_image_url: "/furniture_dataset/lamp/buget_10k_to_20k/lamp8.png",
     dimensions: { length_ft: 1.4, width_ft: 1.4, height_ft: 2.8 },
     material: "Hand-Blown Opaline Glass",
     description: "Mid-century classic night fixture with brushed walnut finial.",
@@ -992,6 +1050,7 @@ export const REAL_FURNITURE_DATASET: DatasetFurnitureItem[] = [
     budgetLabel: "₹20,000 - ₹30,000",
     price: 21500,
     image_url: "/furniture_dataset/lamp/buget_20k_to_30k/lamp9.jpg",
+    extracted_image_url: "/furniture_dataset/lamp/buget_20k_to_30k/lamp9.png",
     dimensions: { length_ft: 1.4, width_ft: 1.4, height_ft: 2.6 },
     material: "Solid Travertine & Heavy Linen",
     description: "Hand-carved travertine stone base with textured woven linen cylinder shade.",
@@ -1005,6 +1064,7 @@ export const REAL_FURNITURE_DATASET: DatasetFurnitureItem[] = [
     budgetLabel: "₹20,000 - ₹30,000",
     price: 24000,
     image_url: "/furniture_dataset/lamp/buget_20k_to_30k/lamp10.jpg",
+    extracted_image_url: "/furniture_dataset/lamp/buget_20k_to_30k/lamp10.png",
     dimensions: { length_ft: 1.2, width_ft: 1.2, height_ft: 3.2 },
     material: "Anodized Aerospace Aluminum",
     description: "Minimalist ultra-slim vertical light column with 360-degree ambient diffusion.",
@@ -1018,6 +1078,7 @@ export const REAL_FURNITURE_DATASET: DatasetFurnitureItem[] = [
     budgetLabel: "₹20,000 - ₹30,000",
     price: 26500,
     image_url: "/furniture_dataset/lamp/buget_20k_to_30k/lamp11.jpg",
+    extracted_image_url: "/furniture_dataset/lamp/buget_20k_to_30k/lamp11.png",
     dimensions: { length_ft: 1.5, width_ft: 1.5, height_ft: 3.5 },
     material: "Cast Bronze & Silk Shade",
     description: "Heirloom-quality cast bronze bedside sculpture with raw silk shade.",
@@ -1031,6 +1092,7 @@ export const REAL_FURNITURE_DATASET: DatasetFurnitureItem[] = [
     budgetLabel: "₹20,000 - ₹30,000",
     price: 28900,
     image_url: "/furniture_dataset/lamp/buget_20k_to_30k/lamp12.jpg",
+    extracted_image_url: "/furniture_dataset/lamp/buget_20k_to_30k/lamp12.png",
     dimensions: { length_ft: 1.6, width_ft: 1.6, height_ft: 2.8 },
     material: "Murano Swirl Glass & Brass",
     description: "Authentic Murano glass swirl craftsmanship with warm ambient filament illumination.",
@@ -1046,6 +1108,7 @@ export const REAL_FURNITURE_DATASET: DatasetFurnitureItem[] = [
     budgetLabel: "₹30,000 - ₹40,000+",
     price: 32500,
     image_url: "/furniture_dataset/lamp/buget_30k_to_40k/lamp10.png",
+    extracted_image_url: "/furniture_dataset/lamp/buget_30k_to_40k/lamp10.png",
     dimensions: { length_ft: 1.8, width_ft: 1.8, height_ft: 3.8 },
     material: "K9 Precision Crystal & 24K Gold Finish",
     description: "Dazzling crystal facet bedside statement piece casting refractive light patterns.",
@@ -1059,6 +1122,7 @@ export const REAL_FURNITURE_DATASET: DatasetFurnitureItem[] = [
     budgetLabel: "₹30,000 - ₹40,000+",
     price: 35000,
     image_url: "/furniture_dataset/lamp/buget_30k_to_40k/lamp12.jpeg",
+    extracted_image_url: "/furniture_dataset/lamp/buget_30k_to_40k/lamp12.png",
     dimensions: { length_ft: 1.8, width_ft: 1.8, height_ft: 6.0 },
     material: "Hand-Hammered Bronzed Steel",
     description: "Grand architectural column floor lamp providing master suite focal glow.",
@@ -1072,6 +1136,7 @@ export const REAL_FURNITURE_DATASET: DatasetFurnitureItem[] = [
     budgetLabel: "₹30,000 - ₹40,000+",
     price: 37500,
     image_url: "/furniture_dataset/lamp/buget_30k_to_40k/lamp13.jpg",
+    extracted_image_url: "/furniture_dataset/lamp/buget_30k_to_40k/lamp13.png",
     dimensions: { length_ft: 2.2, width_ft: 1.8, height_ft: 6.2 },
     material: "Solid Nero Marquina Marble & Brass Arc",
     description: "Iconic sweeping arc lamp rooted in an 80lb Nero Marquina black marble block.",
@@ -1085,6 +1150,7 @@ export const REAL_FURNITURE_DATASET: DatasetFurnitureItem[] = [
     budgetLabel: "₹30,000 - ₹40,000+",
     price: 39999,
     image_url: "/furniture_dataset/lamp/buget_30k_to_40k/lamp16.jpg",
+    extracted_image_url: "/furniture_dataset/lamp/buget_30k_to_40k/lamp16.png",
     dimensions: { length_ft: 2.0, width_ft: 2.0, height_ft: 5.8 },
     material: "Curved Hand-Finished Brass & Calacatta Marble",
     description: "Limited-edition luxury gallery lighting installation designed for elite penthouses.",
@@ -1483,7 +1549,236 @@ export const REAL_FURNITURE_DATASET: DatasetFurnitureItem[] = [
     material: "Italian High-Gloss Acrylic, Moisture-Resistant Marine Ply & Brushed Gold",
     description: "Magnificent luxury master suite wardrobe with reflective mirror finish, dual trouser racks, and concealed security safe.",
   },
+
+  // ==========================================
+  // VAS / WALL DECORE CATEGORY
+  // Budgets: 1k-3k, 4k-8k, 9k-15k
+  // ==========================================
+
+  // Tier 1: ₹1,000 - ₹3,000 (buget_1k_to_3k)
+  {
+    id: "vase_decor_1k_1",
+    category: "vase_plant",
+    name: "vase_plant",
+    label: "Nordic Ribbed Ceramic Bedroom Flower Vase",
+    budgetBracket: "buget_1k_to_3k",
+    budgetLabel: "₹1,000–₹3,000",
+    price: 1899,
+    image_url: "/furniture_dataset/vase_plant/vase_nordic_ribbed.jpg",
+    extracted_image_url: "/furniture_dataset/vase_plant/vase_nordic_ribbed.png",
+    dimensions: { length_ft: 0.8, width_ft: 0.8, height_ft: 1.8 },
+    material: "Matte Ribbed Ceramic & Dried Botanicals",
+    description: "Artisanal fluted ceramic vase styled with dried eucalyptus stems for bedside tables and bedroom shelves.",
+  },
+  {
+    id: "vase_decor_1k_2",
+    category: "vase_plant",
+    name: "vase_plant",
+    label: "Architectural Snake Plant in Stoneware Pot",
+    budgetBracket: "buget_1k_to_3k",
+    budgetLabel: "₹1,000–₹3,000",
+    price: 2199,
+    image_url: "/furniture_dataset/vase_plant/plant_snake_pot.jpg",
+    extracted_image_url: "/furniture_dataset/vase_plant/plant_snake_pot.png",
+    dimensions: { length_ft: 1.2, width_ft: 1.2, height_ft: 2.5 },
+    material: "Textured Stoneware Planter",
+    description: "Air-purifying Sansevieria bedroom accent plant in an organic ribbed stoneware planter.",
+  },
+  {
+    id: "vase_decor_1k_3",
+    category: "vase_plant",
+    name: "vase_plant",
+    label: "Monstera Deliciosa in Ceramic Planter",
+    budgetBracket: "buget_1k_to_3k",
+    budgetLabel: "₹1,000–₹3,000",
+    price: 2499,
+    image_url: "/furniture_dataset/vase_plant/plant_monstera.jpg",
+    extracted_image_url: "/furniture_dataset/vase_plant/plant_monstera.png",
+    dimensions: { length_ft: 1.5, width_ft: 1.5, height_ft: 2.2 },
+    material: "Glazed Ceramic Pot & Botanical Leaves",
+    description: "Lush green Monstera Deliciosa in a minimalist matte white ceramic pot for bedroom corners.",
+  },
+  {
+    id: "vase_decor_1k_4",
+    category: "vase_plant",
+    name: "vase_plant",
+    label: "Boho Hammered Brass Moon Phase Wall Hanging",
+    budgetBracket: "buget_1k_to_3k",
+    budgetLabel: "₹1,000–₹3,000",
+    price: 2799,
+    image_url: "/furniture_dataset/vase_plant/wall_decor_boho_brass_hanging.jpg",
+    extracted_image_url: "/furniture_dataset/vase_plant/wall_decor_boho_brass_hanging.png",
+    dimensions: { length_ft: 2.2, width_ft: 2.0, height_ft: 2.5 },
+    material: "Hammered Brass Plates & Metallic Beaded Fringe",
+    description: "Bohemian modern celestial brass wall art with lunar phases and delicate metallic fringe for bedroom walls.",
+  },
+  {
+    id: "vase_decor_1k_5",
+    category: "vase_plant",
+    name: "vase_plant",
+    label: "Aesthetic Botanical Sketch Oak Framed Bedroom Picture",
+    budgetBracket: "buget_1k_to_3k",
+    budgetLabel: "₹1,000–₹3,000",
+    price: 1999,
+    image_url: "/furniture_dataset/vase_plant/wall_decor_botanical_framed_picture.jpg",
+    extracted_image_url: "/furniture_dataset/vase_plant/wall_decor_botanical_framed_picture.png",
+    dimensions: { length_ft: 1.8, width_ft: 1.8, height_ft: 2.4 },
+    material: "Natural Solid Oak Wood Frame & Matte Art Card",
+    description: "Serene botanical sketch wall art picture framed in clean Scandinavian natural oak, perfect for above bedroom nightstands or study nooks.",
+  },
+
+  // Tier 2: ₹4,000 - ₹8,000 (buget_4k_to_8k)
+  {
+    id: "vase_decor_4k_1",
+    category: "vase_plant",
+    name: "vase_plant",
+    label: "Nordic Oval Ginkgo Leaf Wall Clock & Metal Art",
+    budgetBracket: "buget_4k_to_8k",
+    budgetLabel: "₹4,000–₹8,000",
+    price: 5499,
+    image_url: "/furniture_dataset/vase_plant/wall_decor_oval_ginkgo_clock.jpg",
+    extracted_image_url: "/furniture_dataset/vase_plant/wall_decor_oval_ginkgo_clock.png",
+    dimensions: { length_ft: 1.2, width_ft: 1.2, height_ft: 3.2 },
+    material: "Brushed Gold Metal Frame & Enamel Ginkgo Leaves",
+    description: "Elegant vertical oval gold metal wall clock with teal & gold ginkgo leaves, perfect above bedroom consoles or beds.",
+  },
+  {
+    id: "vase_decor_4k_2",
+    category: "vase_plant",
+    name: "vase_plant",
+    label: "Artisanal Ginkgo Branch Metal Bedroom Wall Clock",
+    budgetBracket: "buget_4k_to_8k",
+    budgetLabel: "₹4,000–₹8,000",
+    price: 6800,
+    image_url: "/furniture_dataset/vase_plant/wall_decor_ginkgo_branch_clock.jpg",
+    extracted_image_url: "/furniture_dataset/vase_plant/wall_decor_ginkgo_branch_clock.png",
+    dimensions: { length_ft: 3.2, width_ft: 3.0, height_ft: 1.8 },
+    material: "Matte Black & Antique Gold Metal Alloy",
+    description: "Wide statement ginkgo leaf branch wall clock with silent sweep movement, ideal for master bedroom headboard walls.",
+  },
+  {
+    id: "vase_decor_4k_3",
+    category: "vase_plant",
+    name: "vase_plant",
+    label: "Fiddle Leaf Fig Indoor Bedroom Accent Tree",
+    budgetBracket: "buget_4k_to_8k",
+    budgetLabel: "₹4,000–₹8,000",
+    price: 6999,
+    image_url: "/furniture_dataset/vase_plant/plant_fiddle_fig.jpg",
+    extracted_image_url: "/furniture_dataset/vase_plant/plant_fiddle_fig.png",
+    dimensions: { length_ft: 1.8, width_ft: 1.8, height_ft: 4.2 },
+    material: "Matte Stone Composite Planter",
+    description: "Statement indoor tree with glossy violin-shaped leaves for bright bedroom corners.",
+  },
+  {
+    id: "vase_decor_4k_4",
+    category: "vase_plant",
+    name: "vase_plant",
+    label: "Scandinavian Fluted Arched Gold Wall Mirror",
+    budgetBracket: "buget_4k_to_8k",
+    budgetLabel: "₹4,000–₹8,000",
+    price: 5999,
+    image_url: "/furniture_dataset/vase_plant/wall_decor_scandi_arch_mirror.jpg",
+    extracted_image_url: "/furniture_dataset/vase_plant/wall_decor_scandi_arch_mirror.png",
+    dimensions: { length_ft: 1.8, width_ft: 1.8, height_ft: 3.2 },
+    material: "Brushed Gold Metal Alloy & High-Clarity Silver Mirror",
+    description: "Elegant architectural arched vanity and accent wall mirror with fluted golden rim for bedroom dressing areas.",
+  },
+  {
+    id: "vase_decor_4k_5",
+    category: "vase_plant",
+    name: "vase_plant",
+    label: "Serene Horizon Minimalist Framed Canvas Picture",
+    budgetBracket: "buget_4k_to_8k",
+    budgetLabel: "₹4,000–₹8,000",
+    price: 6499,
+    image_url: "/furniture_dataset/vase_plant/wall_decor_nordic_horizon_canvas.jpg",
+    extracted_image_url: "/furniture_dataset/vase_plant/wall_decor_nordic_horizon_canvas.png",
+    dimensions: { length_ft: 3.2, width_ft: 3.0, height_ft: 2.2 },
+    material: "Textured Heavy Canvas & Walnut Floating Frame",
+    description: "Panoramic modern landscape canvas picture with soothing earthy tones and luxury dark walnut floating frame for bedroom walls.",
+  },
+
+  // Tier 3: ₹9,000 - ₹15,000 (buget_9k_to_15k)
+  {
+    id: "vase_decor_9k_1",
+    category: "vase_plant",
+    name: "vase_plant",
+    label: "Luxury Geometric Sunburst Metal Wall Clock Sculpture",
+    budgetBracket: "buget_9k_to_15k",
+    budgetLabel: "₹9,000–₹15,000",
+    price: 12500,
+    image_url: "/furniture_dataset/vase_plant/wall_decor_geometric_clock.jpg",
+    extracted_image_url: "/furniture_dataset/vase_plant/wall_decor_geometric_clock.png",
+    dimensions: { length_ft: 1.8, width_ft: 1.8, height_ft: 3.5 },
+    material: "Electroplated Brass & Matte Black Geometric Accents",
+    description: "Contemporary luxury sunburst metal wall sculpture with integrated clock face, designed for bedroom feature walls.",
+  },
+  {
+    id: "vase_decor_9k_2",
+    category: "vase_plant",
+    name: "vase_plant",
+    label: "Artisanal Sculptural Bedroom Centerpiece Ceramic Vase",
+    budgetBracket: "buget_9k_to_15k",
+    budgetLabel: "₹9,000–₹15,000",
+    price: 9800,
+    image_url: "/furniture_dataset/vase_plant/vase_sculptural_ceramic.jpg",
+    extracted_image_url: "/furniture_dataset/vase_plant/vase_sculptural_ceramic.png",
+    dimensions: { length_ft: 1.2, width_ft: 1.0, height_ft: 2.0 },
+    material: "Hand-Molded Terracotta & Glazed Ceramic",
+    description: "Luxury sculptural centerpiece vase featuring sweeping organic folds for bedroom dressers or accent consoles.",
+  },
+  {
+    id: "vase_decor_9k_3",
+    category: "vase_plant",
+    name: "vase_plant",
+    label: "Potted Mediterranean Olive Tree in Fluted Urn",
+    budgetBracket: "buget_9k_to_15k",
+    budgetLabel: "₹9,000–₹15,000",
+    price: 11900,
+    image_url: "/furniture_dataset/vase_plant/plant_olive_tree.jpg",
+    extracted_image_url: "/furniture_dataset/vase_plant/plant_olive_tree.png",
+    dimensions: { length_ft: 2.2, width_ft: 2.2, height_ft: 4.2 },
+    material: "Fluted White Concrete Vessel",
+    description: "Architectural Mediterranean olive tree in an organic stone vessel for luxury master bedroom styling.",
+  },
+  {
+    id: "vase_decor_9k_4",
+    category: "vase_plant",
+    name: "vase_plant",
+    label: "Luxury 3D Layered Lotus & Ginkgo Metal Wall Sculpture",
+    budgetBracket: "buget_9k_to_15k",
+    budgetLabel: "₹9,000–₹15,000",
+    price: 13999,
+    image_url: "/furniture_dataset/vase_plant/wall_decor_lotus_metal_sculpture.jpg",
+    extracted_image_url: "/furniture_dataset/vase_plant/wall_decor_lotus_metal_sculpture.png",
+    dimensions: { length_ft: 3.5, width_ft: 3.2, height_ft: 2.2 },
+    material: "Handcrafted Electroplated Antique Brass & Carbon Steel",
+    description: "Grand 3D floral metal art centerpiece sculpture featuring layered lotus blooms and ginkgo leaves for master bedroom headboard walls.",
+  },
+  {
+    id: "vase_decor_9k_5",
+    category: "vase_plant",
+    name: "vase_plant",
+    label: "Grand Emerald & Gold Leaf 3D Textured Canvas Picture",
+    budgetBracket: "buget_9k_to_15k",
+    budgetLabel: "₹9,000–₹15,000",
+    price: 12999,
+    image_url: "/furniture_dataset/vase_plant/wall_decor_emerald_gold_canvas.jpg",
+    extracted_image_url: "/furniture_dataset/vase_plant/wall_decor_emerald_gold_canvas.png",
+    dimensions: { length_ft: 3.8, width_ft: 3.5, height_ft: 2.4 },
+    material: "24K Gold Leaf Embellishment & Brushed Champagne Brass Frame",
+    description: "Museum-grade luxury 3D impasto abstract canvas picture featuring emerald strokes and real gold leaf in a champagne brass shadowbox frame.",
+  },
 ];
+
+// Ensure every catalog item has Ambica Furniture Shop details across all categories
+REAL_FURNITURE_DATASET.forEach((it) => {
+  if (!it.shop) it.shop = "Ambica Furniture Shop";
+  if (it.description && !it.description.includes("Ambica Furniture")) {
+    it.description = `${it.description} • Available at Ambica Furniture Shop`;
+  }
+});
 
 /**
  * Calculates the realistic displayed width percentage on the room canvas
@@ -1511,6 +1806,8 @@ export function calculateRealisticFurnitureWidthPct(
     physicalWidthFt = 1.8; // Nightstand / table width ~1.8 ft
   } else if (cat.includes("lamp") || cat.includes("light")) {
     physicalWidthFt = 1.1; // Lamp width ~1.1 ft
+  } else if (cat.includes("vase") || cat.includes("plant") || cat.includes("vas") || cat.includes("pot") || cat.includes("wall") || cat.includes("decor") || cat.includes("clock")) {
+    physicalWidthFt = item.dimensions?.width_ft || (cat.includes("wall") || cat.includes("clock") ? 2.5 : 1.3);
   } else if (cat.includes("chair")) {
     physicalWidthFt = 2.5;
   } else if (cat.includes("desk")) {
@@ -1528,10 +1825,27 @@ export function calculateRealisticFurnitureWidthPct(
  */
 export function getBudgetBracketKey(amount: number, category?: string): string {
   const normCat = (category || "").toLowerCase();
+  if (
+    normCat === "vase_plant" ||
+    normCat.includes("vase") ||
+    normCat.includes("vas") ||
+    normCat.includes("wall") ||
+    normCat.includes("decor") ||
+    normCat.includes("decore")
+  ) {
+    if (amount <= 3000) return "buget_1k_to_3k";
+    if (amount <= 8000) return "buget_4k_to_8k";
+    return "buget_9k_to_15k";
+  }
   if (normCat.includes("wardrobe") || normCat.includes("almirah") || normCat.includes("closet")) {
     if (amount <= 30000) return "budget_10k_to_budget_30k";
     if (amount <= 50000) return "budget_30k_to_budget_50k";
     return "budget_50k_to_budget_70k";
+  }
+  if (normCat.includes("side_table") || normCat.includes("sidetable") || normCat.includes("side table") || normCat === "table") {
+    if (amount <= 10000) return "buget_10k";
+    if (amount <= 20000) return "buget_10k_to_20k";
+    return "buget_20k_to_30k";
   }
   if (amount <= 10000) return "buget_10k";
   if (amount <= 20000) return "buget_10k_to_20k";
@@ -1613,11 +1927,13 @@ export function getDatasetItems(category: string, userBudget?: number, bracketKe
     // 1. STUDY TABLE: STRICTLY return ONLY Study Table items.
     // DO NOT show Bed, Lamp, Side Table, Sofa, Couch, Vase, Plant, or any unrelated furniture.
     if (
+      normCat === "study table" ||
       normCat === "studytable" ||
       normCat === "study_table" ||
       normCat === "studydesk" ||
       normCat === "study" ||
-      normCat === "desk"
+      normCat === "desk" ||
+      normCat.includes("study")
     ) {
       return (
         (itCat === "study_table" || itCat === "studytable" || itName === "study_table") &&
@@ -1648,29 +1964,70 @@ export function getDatasetItems(category: string, userBudget?: number, bracketKe
     if (normCat.includes("chair") || normCat.includes("seat") || normCat.includes("recliner")) {
       return itCat.includes("chair") || itName.includes("chair") || itLabel.includes("chair");
     }
-    if (normCat.includes("sidetable") || normCat.includes("side_table") || normCat.includes("nightstand") || normCat.includes("bedside")) {
+    if (
+      normCat === "vase_plant" ||
+      normCat.includes("vase") ||
+      normCat.includes("vas") ||
+      normCat.includes("plant") ||
+      normCat.includes("wall") ||
+      normCat.includes("decor") ||
+      normCat.includes("decore") ||
+      normCat.includes("pot") ||
+      normCat.includes("planter") ||
+      normCat.includes("botanical") ||
+      normCat.includes("clock") ||
+      normCat.includes("picture") ||
+      normCat.includes("painting") ||
+      normCat.includes("canvas")
+    ) {
       return (
-        itCat.includes("side_table") ||
-        itCat.includes("table") ||
-        itCat.includes("nightstand") ||
-        itCat.includes("bedside") ||
-        itName.includes("table") ||
-        itLabel.includes("bedside") ||
-        itLabel.includes("side table") ||
-        itLabel.includes("nightstand")
+        itCat === "vase_plant" ||
+        itCat.includes("vase") ||
+        itCat.includes("plant") ||
+        itCat.includes("wall") ||
+        itCat.includes("decor") ||
+        itCat.includes("clock") ||
+        itName.includes("vase") ||
+        itName.includes("plant") ||
+        itName.includes("wall") ||
+        itName.includes("decor") ||
+        itName.includes("clock") ||
+        itLabel.includes("vase") ||
+        itLabel.includes("plant") ||
+        itLabel.includes("clock") ||
+        itLabel.includes("wall") ||
+        itLabel.includes("decor") ||
+        itLabel.includes("picture") ||
+        itLabel.includes("canvas") ||
+        itLabel.includes("painting") ||
+        itLabel.includes("monstera") ||
+        itLabel.includes("fig") ||
+        itLabel.includes("olive")
       );
     }
-    if (normCat === "table") {
-      return itCat === "table";
+    if (
+      normCat === "side_table" ||
+      normCat === "sidetable" ||
+      normCat.includes("sidetable") ||
+      normCat.includes("side_table") ||
+      normCat.includes("nightstand") ||
+      normCat.includes("bedside")
+    ) {
+      const isStudy = itCat.includes("study") || itName.includes("study") || itLabel.includes("study") || itLabel.includes("desk");
+      const isLamp = itCat.includes("lamp") || itName.includes("lamp") || itLabel.includes("lamp") || itLabel.includes("light");
+      const isBed = itCat.includes("bed") || itName.includes("bed");
+      const isOther = itCat.includes("wardrobe") || itCat.includes("chair");
+      if (isStudy || isLamp || isBed || isOther) return false;
+      return itCat.includes("table") || itLabel.includes("table") || itLabel.includes("nightstand");
     }
-    if (normCat.includes("table")) {
-      return (
-        (itCat.includes("table") || itCat.includes("side_table") || itName.includes("table") || itLabel.includes("table")) &&
-        itCat !== "study_table" &&
-        itName !== "study_table" &&
-        !itLabel.toLowerCase().includes("study desk") &&
-        !itLabel.toLowerCase().includes("study table")
-      );
+
+    if (normCat === "table" || normCat.includes("table")) {
+      const isStudy = itCat.includes("study") || itName.includes("study") || itLabel.includes("study") || itLabel.includes("desk");
+      const isLamp = itCat.includes("lamp") || itName.includes("lamp") || itLabel.includes("lamp") || itLabel.includes("light");
+      const isBed = itCat.includes("bed") || itName.includes("bed");
+      const isOther = itCat.includes("wardrobe") || itCat.includes("chair");
+      if (isStudy || isLamp || isBed || isOther) return false;
+      return itCat.includes("table") || itLabel.includes("table");
     }
     if (normCat.includes("lamp") || normCat.includes("light")) {
       return itCat.includes("lamp") || itCat.includes("light") || itName.includes("lamp") || itName.includes("light");

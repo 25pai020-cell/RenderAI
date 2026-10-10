@@ -56,25 +56,47 @@ DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_PORT = int(os.getenv("DB_PORT", 3306))
 DB_NAME = os.getenv("DB_NAME", "ai_interior_designer")
 
-# Support direct DATABASE_URL / MYSQL_URL (common on Render / cloud platforms)
-raw_db_url = os.getenv("DATABASE_URL") or os.getenv("SQLALCHEMY_DATABASE_URI") or os.getenv("MYSQL_URL")
+def _get_database_uri():
+    raw_db_url = os.getenv("DATABASE_URL") or os.getenv("SQLALCHEMY_DATABASE_URI") or os.getenv("MYSQL_URL")
+    if raw_db_url:
+        if raw_db_url.startswith("mysql://"):
+            raw_db_url = raw_db_url.replace("mysql://", "mysql+pymysql://", 1)
+        elif raw_db_url.startswith("postgres://"):
+            raw_db_url = raw_db_url.replace("postgres://", "postgresql://", 1)
+        return raw_db_url
 
-if raw_db_url:
-    # Ensure MySQL URLs use pymysql driver
-    if raw_db_url.startswith("mysql://"):
-        raw_db_url = raw_db_url.replace("mysql://", "mysql+pymysql://", 1)
-    elif raw_db_url.startswith("postgres://"):
-        raw_db_url = raw_db_url.replace("postgres://", "postgresql://", 1)
-    SQLALCHEMY_DATABASE_URI = raw_db_url
-else:
-    SQLALCHEMY_DATABASE_URI = URL.create(
-        drivername="mysql+pymysql",
-        username=DB_USERNAME,
-        password=DB_PASSWORD,
-        host=DB_HOST,
-        port=DB_PORT,
-        database=DB_NAME,
-    )
+    # Check if local MySQL is accessible with the configured credentials
+    try:
+        import pymysql
+        conn = pymysql.connect(
+            host=DB_HOST,
+            user=DB_USERNAME,
+            password=DB_PASSWORD,
+            port=DB_PORT,
+            connect_timeout=2,
+        )
+        try:
+            with conn.cursor() as cur:
+                cur.execute(f"CREATE DATABASE IF NOT EXISTS `{DB_NAME}` CHARACTER SET utf8mb4;")
+            conn.commit()
+        except Exception:
+            pass
+        conn.close()
+
+        return URL.create(
+            drivername="mysql+pymysql",
+            username=DB_USERNAME,
+            password=DB_PASSWORD,
+            host=DB_HOST,
+            port=DB_PORT,
+            database=DB_NAME,
+        )
+    except Exception as e:
+        print(f"[Database Notice] MySQL connection failed ({e}). Automatically using local SQLite database.")
+        sqlite_file = os.path.abspath(os.path.join(config_dir, "ai_interior_designer.db")).replace("\\", "/")
+        return f"sqlite:///{sqlite_file}"
+
+SQLALCHEMY_DATABASE_URI = _get_database_uri()
 
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 

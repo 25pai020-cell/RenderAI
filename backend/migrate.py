@@ -33,11 +33,14 @@ def run_migration(db):
 
     for column_name, column_type in additions:
         if column_name not in existing:
-            db.session.execute(
-                text(
-                    f"ALTER TABLE room_uploads "
-                    f"ADD COLUMN {column_name} {column_type}"
+            try:
+                db.session.execute(
+                    text(
+                        f"ALTER TABLE room_uploads "
+                        f"ADD COLUMN {column_name} {column_type}"
+                    )
                 )
-            )
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
 
-    db.session.commit()

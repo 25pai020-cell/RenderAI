@@ -26,6 +26,7 @@ import {
   BUDGET_TIERS,
   DatasetFurnitureItem,
   getDatasetItems,
+  getDatasetItemById,
   getBudgetBracketKey,
   parseBudgetFromInput,
   getOrExtractItemImageUrl,
@@ -48,7 +49,7 @@ const normalizePlacedItems = (items: any[]): PlacedItem[] => {
     } else if (cat.includes("chair")) {
       defaultFallbackUrl = "/furniture_dataset/study_chair/study_chair_10k.png";
     } else if (cat.includes("lamp") || cat.includes("light")) {
-      defaultFallbackUrl = "/furniture_dataset/lamp/buget_10k/lamp1.jpg";
+      defaultFallbackUrl = "/furniture_dataset/lamp/buget_10k/lamp1.png";
     } else if (cat.includes("table") || cat.includes("bedside") || cat.includes("nightstand")) {
       defaultFallbackUrl = "/furniture_dataset/table/buget_10k/table1.jpg";
     } else if (cat.includes("wardrobe") || cat.includes("almirah") || cat.includes("closet")) {
@@ -435,7 +436,7 @@ export default function ChatPage() {
             {
               id: "welcome_init",
               sender: "AI",
-              text: "Hello! I'm your AI Interior Designer. 🏡\n\nPlease upload a photo of your room or configure your room dimensions to start our interactive design session.",
+              text: "Hello! I'm your AI Interior Designer. \n\nPlease upload a photo of your room or configure your room dimensions to start our interactive design session.",
               timestamp: new Date().toISOString(),
               step: "greeting",
             },
@@ -491,7 +492,7 @@ export default function ChatPage() {
       { label: "₹30,000 - ₹40,000+", value: 38000, bracketKey: "buget_30k_to_40k" },
     ];
 
-    if (normalizedKey === "table") {
+    if (normalizedKey === "table" || normalizedKey === "side_table") {
       budgetOptions = [
         { label: "₹1–₹10,000", value: 10000, bracketKey: "buget_10k" },
         { label: "₹10,000–₹20,000", value: 20000, bracketKey: "buget_10k_to_20k" },
@@ -502,6 +503,17 @@ export default function ChatPage() {
         { label: "₹10,000–₹30,000", value: 30000, bracketKey: "budget_10k_to_budget_30k" },
         { label: "₹30,000–₹50,000", value: 50000, bracketKey: "budget_30k_to_budget_50k" },
         { label: "₹50,000–₹70,000", value: 70000, bracketKey: "budget_50k_to_budget_70k" },
+      ];
+    } else if (
+      normalizedKey === "vase_plant" ||
+      normalizedKey.includes("vase") ||
+      normalizedKey.includes("decor") ||
+      normalizedKey.includes("plant")
+    ) {
+      budgetOptions = [
+        { label: "₹1,000–₹3,000", value: 3000, bracketKey: "buget_1k_to_3k" },
+        { label: "₹4,000–₹8,000", value: 8000, bracketKey: "buget_4k_to_8k" },
+        { label: "₹9,000–₹15,000", value: 15000, bracketKey: "buget_9k_to_15k" },
       ];
     }
 
@@ -534,6 +546,10 @@ export default function ChatPage() {
         if (budgetValue <= 30000) targetBracket = "budget_10k_to_budget_30k";
         else if (budgetValue <= 50000) targetBracket = "budget_30k_to_budget_50k";
         else targetBracket = "budget_50k_to_budget_70k";
+      } else if (cat === "vase_plant" || cat.includes("vase") || cat.includes("decor") || cat.includes("plant")) {
+        if (budgetValue <= 3000) targetBracket = "buget_1k_to_3k";
+        else if (budgetValue <= 8000) targetBracket = "buget_4k_to_8k";
+        else targetBracket = "buget_9k_to_15k";
       } else {
         if (budgetValue <= 10000) targetBracket = "buget_10k";
         else if (budgetValue <= 20000) targetBracket = "buget_10k_to_20k";
@@ -547,7 +563,7 @@ export default function ChatPage() {
 
     let budgetDisplay = `₹${budgetValue.toLocaleString("en-IN")}`;
     let folderHint = "";
-    if (cat === "table") {
+    if (cat === "table" || cat === "side_table") {
       if (targetBracket === "buget_10k") {
         budgetDisplay = "₹1–₹10,000";
         folderHint = " (from table/budget_10k/)";
@@ -569,6 +585,17 @@ export default function ChatPage() {
         budgetDisplay = "₹50,000–₹70,000";
         folderHint = " (from wardrobe/budget_50k_to_budget_70k/)";
       }
+    } else if (cat === "vase_plant" || cat.includes("vase") || cat.includes("decor") || cat.includes("plant")) {
+      if (targetBracket === "buget_1k_to_3k") {
+        budgetDisplay = "₹1,000–₹3,000";
+        folderHint = " (from vase_plant/1k-3k/)";
+      } else if (targetBracket === "buget_4k_to_8k") {
+        budgetDisplay = "₹4,000–₹8,000";
+        folderHint = " (from vase_plant/4k-8k/)";
+      } else if (targetBracket === "buget_9k_to_15k") {
+        budgetDisplay = "₹9,000–₹15,000";
+        folderHint = " (from vase_plant/9k-15k/)";
+      }
     }
 
     // 1. User message
@@ -583,7 +610,7 @@ export default function ChatPage() {
     let chairRecommendationText = "";
     if (cat === "study_table" || cat.includes("study") || cat === "desk") {
       const recChair = getRecommendedStudyChairForBudget(targetBracket, budgetValue);
-      chairRecommendationText = `\n\n🪑 **Recommended Study Chair Pairing:**\nWe recommend pairing your workspace with the **${recChair.label}** (₹${recChair.price.toLocaleString(
+      chairRecommendationText = `\n\n**Recommended Study Chair Pairing:**\nWe recommend pairing your workspace with the **${recChair.label}** (₹${recChair.price.toLocaleString(
         "en-IN"
       )}), ergonomically designed for study posture and selected to stay strictly within your **${budgetDisplay}** budget.`;
     }
@@ -652,6 +679,17 @@ export default function ChatPage() {
         defaultX = 72;
         defaultY = 62;
       }
+    } else if (catLower.includes("vase") || catLower.includes("plant") || catLower.includes("vas") || catLower.includes("pot")) {
+      const existingPlants = placedItems.filter(
+        (it) => (it.category || "").includes("vase") || (it.category || "").includes("plant")
+      );
+      if (existingPlants.length === 0) {
+        defaultX = 84;
+        defaultY = 70;
+      } else {
+        defaultX = 16;
+        defaultY = 70;
+      }
     } else if (catLower.includes("wardrobe") || catLower.includes("almirah") || catLower.includes("closet")) {
       const existingWardrobes = placedItems.filter(
         (it) => (it.category || "").includes("wardrobe") || (it.category || "").includes("almirah")
@@ -668,7 +706,9 @@ export default function ChatPage() {
     const dropX = posX ?? defaultX;
     const dropY = posY ?? defaultY;
     const uniqueItemId = `item_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-    const initialPlacedUrl = item.extracted_image_url || item.image_url;
+    const canonical = item.id ? getDatasetItemById(item.id) : undefined;
+    const initialPlacedUrl = canonical?.extracted_image_url || item.extracted_image_url || item.image_url;
+    const initialNochairUrl = canonical?.nochair_image_url || item.nochair_image_url;
 
     const newPlacedItem: PlacedItem = {
       id: uniqueItemId,
@@ -678,6 +718,7 @@ export default function ChatPage() {
       category: item.category,
       price: item.price,
       image_url: initialPlacedUrl,
+      nochair_image_url: initialNochairUrl,
       pos_x: dropX,
       pos_y: dropY,
       scale: 1.0,
@@ -692,7 +733,7 @@ export default function ChatPage() {
     setSelectedItemId(uniqueItemId);
 
     // If transparent version is not yet resolved, extract it in background and update
-    if (!item.extracted_image_url) {
+    if (!canonical?.extracted_image_url && !item.extracted_image_url) {
       getOrExtractItemImageUrl(item).then((extractedUrl) => {
         if (extractedUrl && extractedUrl !== initialPlacedUrl) {
           setPlacedItems((prev) =>
@@ -731,7 +772,7 @@ export default function ChatPage() {
       sender: "AI",
       text: `✅ Placed **${item.label}** (₹${item.price.toLocaleString(
         "en-IN"
-      )}) into your room at that exact position!\n\nYou can move it around on the canvas anytime.${nextPrompt}`,
+      )}) into your room at that exact position!\n\nTotal cost so far: ₹${(placedItems.reduce((acc, it) => acc + (it.price || 0), 0) + item.price).toLocaleString("en-IN")}\n\nYou can move it around on the canvas anytime.${nextPrompt}`,
       timestamp: new Date().toISOString(),
       step: "item_placed",
       suggestedCategories: nextSuggested,
@@ -864,6 +905,42 @@ export default function ChatPage() {
     }
   };
 
+  // Cleanly remove matching chair from placed study table
+  const handleRemoveChair = (id: string) => {
+    setPlacedItems((prev) => {
+      const target = prev.find((it) => it.id === id);
+      if (!target) return prev;
+      const canonical = target.datasetId ? getDatasetItemById(target.datasetId) : undefined;
+      const nochairUrl = target.nochair_image_url || canonical?.nochair_image_url;
+      if (!nochairUrl) return prev;
+
+      const updated = prev.map((it) =>
+        it.id === id
+          ? {
+              ...it,
+              image_url: nochairUrl,
+              label: it.label.includes("Chair")
+                ? it.label.replace("+ Chair Set", "(Desk Only)").replace("+ Chair", "(Desk Only)")
+                : `${it.label} (Desk Only)`,
+            }
+          : it
+      );
+      syncFurnitureToBackend(updated, room?.room_id);
+      return updated;
+    });
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: `ai_nochair_${Date.now()}`,
+        sender: "AI",
+        text: `🪑 Cleanly removed the chair from your study desk! Now showing the standalone study table on your room canvas.`,
+        timestamp: new Date().toISOString(),
+        step: "custom",
+      },
+    ]);
+  };
+
   // Remove individual placed item permanently
   const handleRemoveItem = async (id: string) => {
     const itemToRemove = placedItems.find((it) => it.id === id);
@@ -968,8 +1045,27 @@ export default function ChatPage() {
       return;
     }
 
-    // Check if user mentioned a category (e.g. "bed", "table", "side table", "lamp", "wardrobe")
     const lower = userText.toLowerCase();
+
+    // Check if user specifically requested to remove the chair (from study table / desk)
+    if (
+      lower.includes("remove chair") ||
+      lower.includes("remove the chair") ||
+      lower.includes("delete chair") ||
+      lower.includes("without chair") ||
+      lower.includes("no chair") ||
+      lower.includes("desk only") ||
+      lower.includes("table only")
+    ) {
+      const targetTable =
+        placedItems.find((it) => it.id === selectedItemId && (it.nochair_image_url || (it.category || "").includes("study"))) ||
+        placedItems.find((it) => it.nochair_image_url || (it.category || "").includes("study") || it.label.toLowerCase().includes("study"));
+
+      if (targetTable) {
+        handleRemoveChair(targetTable.id);
+        return;
+      }
+    }
     const matchedCategory = DATASET_CATEGORIES.find((c) => {
       if (c.key === "study_table") {
         return (
@@ -989,11 +1085,16 @@ export default function ChatPage() {
           lower.includes("nightstand")
         );
       }
-      if (c.key === "chair") {
+      if (c.key === "vase_plant" || c.key === "chair") {
         return (
+          lower.includes("vase") ||
+          lower.includes("vas") ||
+          lower.includes("plant") ||
+          lower.includes("planter") ||
+          lower.includes("pot") ||
+          lower.includes("flower") ||
+          lower.includes("botanical") ||
           lower.includes("chair") ||
-          lower.includes("armchair") ||
-          lower.includes("recliner") ||
           lower.includes("seating")
         );
       }
@@ -1221,6 +1322,7 @@ export default function ChatPage() {
                 onUpdateItemScale={handleUpdateItemScale}
                 onUpdateItemRotation={handleUpdateItemRotation}
                 onRemoveItem={handleRemoveItem}
+                onRemoveChair={handleRemoveChair}
                 onClearAll={handleClearAllItems}
                 isLight={isLight}
                 onZoomPreview={(url) => setZoomImage(url)}
@@ -1256,8 +1358,7 @@ export default function ChatPage() {
                           : "bg-slate-800 hover:bg-indigo-600 hover:text-white text-stone-200 border-slate-700 hover:border-indigo-600"
                       }`}
                     >
-                      <span>{cat.icon}</span>
-                      <span>[ {cat.label} ]</span>
+                      <span>{cat.label}</span>
                     </button>
                   ))}
                 </div>
@@ -1407,8 +1508,9 @@ export default function ChatPage() {
                                   draggable
                                   onDragStart={(e) => {
                                     setDraggedItem(item);
-                                    const dragUrl = item.extracted_image_url || item.image_url;
-                                    const payload = { ...item, image_url: dragUrl };
+                                    const canonical = item.id ? getDatasetItemById(item.id) : undefined;
+                                    const dragUrl = canonical?.extracted_image_url || item.extracted_image_url || item.image_url;
+                                    const payload = { ...item, ...canonical, image_url: dragUrl };
                                     e.dataTransfer.setData("application/json", JSON.stringify(payload));
                                     e.dataTransfer.effectAllowed = "copyMove";
                                     try {
@@ -1441,7 +1543,15 @@ export default function ChatPage() {
                                         <FiMove className="mr-1" /> Drag to Canvas
                                       </div>
                                     </div>
+                                    <div className="flex items-center gap-1 mb-1">
+                                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">
+                                        🏪 Ambica Furniture Shop
+                                      </span>
+                                    </div>
                                     <h5 className="font-bold text-[11px] line-clamp-1">{item.label}</h5>
+                                    <p className="text-[10px] font-semibold text-amber-700 dark:text-amber-400 mt-0.5">
+                                      Store: Ambica Furniture Shop
+                                    </p>
                                     <div className="flex items-center justify-between mt-1">
                                       <span className="font-mono text-emerald-600 font-bold text-xs">
                                         ₹{item.price.toLocaleString("en-IN")}
@@ -1530,7 +1640,7 @@ export default function ChatPage() {
                           : "bg-slate-800 hover:bg-slate-700 text-stone-300 border-slate-700"
                       }`}
                     >
-                      {cat.icon} {cat.label}
+                      {cat.label}
                     </button>
                   ))}
                 </div>
@@ -1548,8 +1658,9 @@ export default function ChatPage() {
             onPlaceItem={(item) => handlePlaceFurnitureItem(item)}
             onDragStartItem={(e, item) => {
               setDraggedItem(item);
-              const dragUrl = item.extracted_image_url || item.image_url;
-              const payload = { ...item, image_url: dragUrl };
+              const canonical = item.id ? getDatasetItemById(item.id) : undefined;
+              const dragUrl = canonical?.extracted_image_url || item.extracted_image_url || item.image_url;
+              const payload = { ...item, ...canonical, image_url: dragUrl };
               e.dataTransfer.setData("application/json", JSON.stringify(payload));
               e.dataTransfer.effectAllowed = "copyMove";
               try {

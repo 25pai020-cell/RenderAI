@@ -59,6 +59,11 @@ export default function ForgotPassword() {
         email: cleanEmail,
       });
 
+      const receivedCode = res.data?.verification_code || res.data?.code;
+      if (receivedCode) {
+        setVerificationCode(String(receivedCode));
+      }
+
       setStatusMsg({
         type: "info",
         text: res.data.message || `Verification code sent to ${cleanEmail}. Please check your inbox.`,
@@ -87,6 +92,11 @@ export default function ForgotPassword() {
       const res = await api.post("/forgot-password/send-code", {
         email: cleanEmail,
       });
+
+      const receivedCode = res.data?.verification_code || res.data?.code;
+      if (receivedCode) {
+        setVerificationCode(String(receivedCode));
+      }
 
       setStatusMsg({
         type: "info",

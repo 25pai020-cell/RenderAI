@@ -129,7 +129,6 @@ export default function FurnitureMenu({
                     : "bg-slate-800 hover:bg-slate-700 text-stone-300 border-slate-700"
                 }`}
               >
-                <span>{cat.icon}</span>
                 <span>{cat.label}</span>
               </button>
             ))}
@@ -202,16 +201,32 @@ export default function FurnitureMenu({
                         {item.budgetLabel}
                       </span>
 
+                      {/* Ambica Furniture Shop Badge */}
+                      <span className="absolute top-2 right-2 bg-amber-600/95 backdrop-blur-xs text-white text-[9px] font-bold px-2 py-0.5 rounded shadow flex items-center gap-1">
+                        🏪 Ambica Furniture Shop
+                      </span>
+
                       {/* Drag Hint on Hover */}
                       <div className="absolute inset-0 bg-indigo-600/30 backdrop-blur-2xs opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-bold gap-1 pointer-events-none">
                         <FiMove /> Drag into Room
                       </div>
                     </div>
 
+                    {/* Shop Tag */}
+                    <div className="flex items-center gap-1 mb-1">
+                      <span className="text-[10px] font-bold tracking-wide px-2 py-0.5 rounded bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                        🏪 Ambica Furniture Shop
+                      </span>
+                    </div>
+
                     {/* Details */}
                     <h4 className={`font-bold text-sm line-clamp-1 ${isLight ? "text-stone-900" : "text-stone-100"}`}>
                       {item.label}
                     </h4>
+
+                    <p className="text-[11px] font-semibold text-amber-700 dark:text-amber-400 mt-0.5">
+                      <span className="font-bold">Store:</span> Ambica Furniture Shop
+                    </p>
 
                     {item.material && (
                       <p className={`text-[11px] mt-1 line-clamp-1 ${isLight ? "text-stone-600" : "text-stone-300"}`}>

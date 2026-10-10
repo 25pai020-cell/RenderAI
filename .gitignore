@@ -102,3 +102,6 @@ Desktop.ini
 *.swo
 *~
 *.pt
+
+backend/*.db
+backend/*.sqlite3
